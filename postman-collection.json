@@ -1,0 +1,331 @@
+{
+  "info": {
+    "name": "Cleaning Service API",
+    "description": "API collection for Cleaning Service application",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{jwt_token}}",
+        "type": "string"
+      }
+    ]
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:8080/api",
+      "type": "string"
+    },
+    {
+      "key": "jwt_token",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Authentication",
+      "item": [
+        {
+          "name": "Login",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"superadmin\",\n  \"password\": \"admin123\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/signin",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "signin"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const response = pm.response.json();",
+                  "    pm.collectionVariables.set('jwt_token', response.accessToken);",
+                  "    console.log('JWT token saved:', response.accessToken);",
+                  "}"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Customers",
+      "item": [
+        {
+          "name": "Register Customer",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"customer1\",\n  \"email\": \"customer1@example.com\",\n  \"password\": \"password123\",\n  \"firstName\": \"John\",\n  \"lastName\": \"Doe\",\n  \"phoneNumber\": \"123-456-7890\",\n  \"address\": \"123 Main St\",\n  \"city\": \"Manila\",\n  \"region\": \"NCR\",\n  \"postalCode\": \"1000\",\n  \"country\": \"Philippines\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/customers/register",
+              "host": ["{{base_url}}"],
+              "path": ["customers", "register"]
+            }
+          }
+        },
+        {
+          "name": "Get All Customers",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/customers",
+              "host": ["{{base_url}}"],
+              "path": ["customers"]
+            }
+          }
+        },
+        {
+          "name": "Get Customer by ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/customers/1",
+              "host": ["{{base_url}}"],
+              "path": ["customers", "1"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Cleaners",
+      "item": [
+        {
+          "name": "Register Cleaner",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"cleaner1\",\n  \"email\": \"cleaner1@example.com\",\n  \"password\": \"password123\",\n  \"firstName\": \"Jane\",\n  \"lastName\": \"Smith\",\n  \"phoneNumber\": \"098-765-4321\",\n  \"address\": \"456 Oak Ave\",\n  \"city\": \"Quezon City\",\n  \"region\": \"NCR\",\n  \"postalCode\": \"1100\",\n  \"country\": \"Philippines\",\n  \"hourlyRate\": 500.00,\n  \"bio\": \"Professional cleaner with 5 years experience\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/cleaners/register",
+              "host": ["{{base_url}}"],
+              "path": ["cleaners", "register"]
+            }
+          }
+        },
+        {
+          "name": "Get All Cleaners",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/cleaners",
+              "host": ["{{base_url}}"],
+              "path": ["cleaners"]
+            }
+          }
+        },
+        {
+          "name": "Get Available Cleaners",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/cleaners/available",
+              "host": ["{{base_url}}"],
+              "path": ["cleaners", "available"]
+            }
+          }
+        },
+        {
+          "name": "Get Cleaner by ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/cleaners/2",
+              "host": ["{{base_url}}"],
+              "path": ["cleaners", "2"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Bookings",
+      "item": [
+        {
+          "name": "Create Booking",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"customerId\": 1,\n  \"cleanerId\": 2,\n  \"bookingDate\": \"2024-01-15T10:00:00\",\n  \"durationHours\": 3,\n  \"specialInstructions\": \"Focus on kitchen and bathrooms\",\n  \"serviceAddress\": \"123 Main St, New York, NY 10001\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/bookings",
+              "host": ["{{base_url}}"],
+              "path": ["bookings"]
+            }
+          }
+        },
+        {
+          "name": "Get All Bookings",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/bookings",
+              "host": ["{{base_url}}"],
+              "path": ["bookings"]
+            }
+          }
+        },
+        {
+          "name": "Get Bookings by Customer",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/bookings/customer/1",
+              "host": ["{{base_url}}"],
+              "path": ["bookings", "customer", "1"]
+            }
+          }
+        },
+        {
+          "name": "Get Bookings by Cleaner",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/bookings/cleaner/2",
+              "host": ["{{base_url}}"],
+              "path": ["bookings", "cleaner", "2"]
+            }
+          }
+        },
+        {
+          "name": "Confirm Booking",
+          "request": {
+            "method": "PUT",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/bookings/1/confirm",
+              "host": ["{{base_url}}"],
+              "path": ["bookings", "1", "confirm"]
+            }
+          }
+        },
+        {
+          "name": "Start Booking",
+          "request": {
+            "method": "PUT",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/bookings/1/start",
+              "host": ["{{base_url}}"],
+              "path": ["bookings", "1", "start"]
+            }
+          }
+        },
+        {
+          "name": "Complete Booking",
+          "request": {
+            "method": "PUT",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/bookings/1/complete",
+              "host": ["{{base_url}}"],
+              "path": ["bookings", "1", "complete"]
+            }
+          }
+        },
+        {
+          "name": "Cancel Booking",
+          "request": {
+            "method": "PUT",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/bookings/1/cancel",
+              "host": ["{{base_url}}"],
+              "path": ["bookings", "1", "cancel"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Admins",
+      "item": [
+        {
+          "name": "Create Admin",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"admin1\",\n  \"email\": \"admin1@example.com\",\n  \"password\": \"password123\",\n  \"firstName\": \"Admin\",\n  \"lastName\": \"User\",\n  \"phoneNumber\": \"555-123-4567\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/admins/create",
+              "host": ["{{base_url}}"],
+              "path": ["admins", "create"]
+            }
+          }
+        },
+        {
+          "name": "Get All Admins",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/admins",
+              "host": ["{{base_url}}"],
+              "path": ["admins"]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

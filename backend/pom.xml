@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 
+         http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>com.adao</groupId>
+        <artifactId>cleaningservice</artifactId>
+        <version>1.0.0</version>
+    </parent>
+
+    <artifactId>backend</artifactId>
+    <packaging>pom</packaging>
+
+    <name>Backend Module</name>
+    <description>Spring Boot REST API with controllers and security</description>
+
+    <modules>
+        <module>data</module>
+        <module>business</module>
+        <module>app</module>
+    </modules>
+
+</project>

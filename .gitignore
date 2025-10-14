@@ -1,0 +1,29 @@
+# IDE
+.idea/
+*.iml
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Node / Angular (webstore & admin)
+webstore/node_modules/
+webstore/.angular/
+webstore/dist/
+admin/node_modules/
+admin/dist/
+
+# Java / Maven
+backend/**/target/
+
+# Logs & env
+*.log
+.env
+.env.local
+
+# Misc
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnp*
+.sass-cache/

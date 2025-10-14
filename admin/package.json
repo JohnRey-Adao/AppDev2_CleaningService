@@ -1,0 +1,11 @@
+{
+  "name": "cleaningservice-admin",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Placeholder for Admin Angular app to be scaffolded",
+  "scripts": {
+    "start": "echo Admin Angular app not created yet. Run: npx @angular/cli new admin --directory .",
+    "build": "echo Admin Angular app not created yet.",
+    "install": "echo Nothing to install yet."
+  }
+}

@@ -1,0 +1,747 @@
+<div class="dashboard-container">
+  <!-- Dashboard Header -->
+  <div class="row mb-4">
+    <div class="col-12">
+      <h2><i class="fas fa-crown me-2"></i>Super Admin Dashboard</h2>
+      <hr>
+    </div>
+  </div>
+
+  <!-- Navigation Tabs -->
+  <div class="row mb-4">
+    <div class="col-12">
+      <ul class="nav nav-tabs" id="dashboardTabs" role="tablist">
+        <li class="nav-item" role="presentation">
+          <button class="nav-link active" id="overview-tab" data-bs-toggle="tab" data-bs-target="#overview" 
+                  type="button" role="tab" (click)="setActiveTab('overview')">
+            <i class="fas fa-chart-line me-2"></i>Overview
+          </button>
+        </li>
+        <li class="nav-item" role="presentation">
+          <button class="nav-link" id="admins-tab" data-bs-toggle="tab" data-bs-target="#admins" 
+                  type="button" role="tab" (click)="setActiveTab('admins')">
+            <i class="fas fa-crown me-2"></i>Manage Admins
+          </button>
+        </li>
+        <li class="nav-item" role="presentation">
+          <button class="nav-link" id="cleaners-tab" data-bs-toggle="tab" data-bs-target="#cleaners" 
+                  type="button" role="tab" (click)="setActiveTab('cleaners')">
+            <i class="fas fa-broom me-2"></i>Cleaner Management
+          </button>
+        </li>
+        <li class="nav-item" role="presentation">
+          <button class="nav-link" id="bookings-tab" data-bs-toggle="tab" data-bs-target="#bookings" 
+                  type="button" role="tab" (click)="setActiveTab('bookings')">
+            <i class="fas fa-calendar-check me-2"></i>Bookings
+          </button>
+        </li>
+        <li class="nav-item" role="presentation">
+          <button class="nav-link" id="system-tab" data-bs-toggle="tab" data-bs-target="#system" 
+                  type="button" role="tab" (click)="setActiveTab('system')">
+            <i class="fas fa-cog me-2"></i>System Management
+          </button>
+        </li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- Tab Content -->
+  <div class="tab-content" id="dashboardTabContent">
+    
+    <!-- Overview Tab -->
+    <div class="tab-pane fade" [class.show]="activeTab === 'overview'" [class.active]="activeTab === 'overview'" id="overview" role="tabpanel">
+      <!-- Key Metrics Cards -->
+      <div class="row mb-4">
+        <div class="col-md-2">
+          <div class="card text-center">
+            <div class="card-body">
+              <i class="fas fa-users fa-2x text-primary mb-2"></i>
+              <h5 class="card-title">Total Users</h5>
+              <h3 class="text-primary">{{ totalUsers }}</h3>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-2">
+          <div class="card text-center">
+            <div class="card-body">
+              <i class="fas fa-home fa-2x text-info mb-2"></i>
+              <h5 class="card-title">Customers</h5>
+              <h3 class="text-info">{{ totalCustomers }}</h3>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-2">
+          <div class="card text-center">
+            <div class="card-body">
+              <i class="fas fa-broom fa-2x text-success mb-2"></i>
+              <h5 class="card-title">Cleaners</h5>
+              <h3 class="text-success">{{ totalCleaners }}</h3>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-2">
+          <div class="card text-center">
+            <div class="card-body">
+              <i class="fas fa-cog fa-2x text-warning mb-2"></i>
+              <h5 class="card-title">Admins</h5>
+              <h3 class="text-warning">{{ totalAdmins }}</h3>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-2">
+          <div class="card text-center">
+            <div class="card-body">
+              <i class="fas fa-calendar-check fa-2x text-secondary mb-2"></i>
+              <h5 class="card-title">Bookings</h5>
+              <h3 class="text-secondary">{{ totalBookings }}</h3>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-2">
+          <div class="card text-center">
+            <div class="card-body">
+              <i class="fas fa-dollar-sign fa-2x text-success mb-2"></i>
+              <h5 class="card-title">Revenue</h5>
+              <h3 class="text-success">{{ totalRevenue | currency }}</h3>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- System Statistics -->
+      <div class="row">
+        <div class="col-md-6">
+          <div class="card">
+            <div class="card-header">
+              <h5><i class="fas fa-chart-line me-2"></i>System Statistics</h5>
+            </div>
+            <div class="card-body">
+              <div class="row text-center mb-3">
+                <div class="col-6">
+                  <h4 class="text-success">{{ completedBookings }}</h4>
+                  <p class="small">Completed Jobs</p>
+                </div>
+                <div class="col-6">
+                  <h4 class="text-warning">{{ pendingBookings }}</h4>
+                  <p class="small">Pending Jobs</p>
+                </div>
+              </div>
+              <div class="row text-center mb-3">
+                <div class="col-6">
+                  <h4 class="text-info">{{ availableCleaners }}</h4>
+                  <p class="small">Available Cleaners</p>
+                </div>
+                <div class="col-6">
+                  <h4 class="text-primary">{{ activeCustomers }}</h4>
+                  <p class="small">Active Customers</p>
+                </div>
+              </div>
+              <hr>
+              <div class="text-center">
+                <h5 class="text-success">{{ totalRevenue | currency }}</h5>
+                <p class="small">Total Platform Revenue</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-md-6">
+          <div class="card">
+            <div class="card-header">
+              <h5><i class="fas fa-list me-2"></i>Recent Bookings</h5>
+            </div>
+            <div class="card-body">
+              <div class="table-responsive">
+                <table class="table table-hover">
+                  <thead>
+                    <tr>
+                      <th>Date</th>
+                      <th>Customer</th>
+                      <th>Cleaner</th>
+                      <th>Amount</th>
+                      <th>Status</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr *ngFor="let booking of recentBookings">
+                      <td>{{ formatDate(booking.bookingDate) }}</td>
+                      <td>{{ booking.customer.firstName }} {{ booking.customer.lastName }}</td>
+                      <td>{{ booking.cleaner.firstName }} {{ booking.cleaner.lastName }}</td>
+                      <td>{{ booking.totalAmount | currency }}</td>
+                      <td>
+                        <span class="badge" [ngClass]="getStatusClass(booking.status)">
+                          {{ booking.status }}
+                        </span>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Admins Tab -->
+    <div class="tab-pane fade" [class.show]="activeTab === 'admins'" [class.active]="activeTab === 'admins'" id="admins" role="tabpanel">
+      <div class="row">
+        <div class="col-12">
+          <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+              <h5><i class="fas fa-crown me-2"></i>Manage Admins</h5>
+              <button class="btn btn-primary" (click)="showCreateAdminForm = true">
+                <i class="fas fa-plus me-1"></i>Add Admin
+              </button>
+            </div>
+            <div class="card-body">
+              <div class="table-responsive">
+                <table class="table table-hover">
+                  <thead>
+                    <tr>
+                      <th>Name</th>
+                      <th>Email</th>
+                      <th>Level</th>
+                      <th>Status</th>
+                      <th>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr *ngFor="let admin of admins">
+                      <td>{{ admin.firstName }} {{ admin.lastName }}</td>
+                      <td>{{ admin.email }}</td>
+                      <td>
+                        <span class="badge" [ngClass]="admin.adminLevel === 'SUPER_ADMIN' ? 'bg-danger' : 'bg-warning'">
+                          {{ admin.adminLevel }}
+                        </span>
+                      </td>
+                      <td>
+                        <span class="badge" [ngClass]="admin.status === 'ACTIVE' ? 'bg-success' : 'bg-secondary'">
+                          {{ admin.status }}
+                        </span>
+                      </td>
+                      <td>
+                        <button class="btn btn-sm btn-outline-primary me-1">Edit</button>
+                        <button class="btn btn-sm btn-outline-danger" 
+                                *ngIf="admin.adminLevel !== 'SUPER_ADMIN'"
+                                (click)="deleteAdmin(admin.id)">
+                          Delete
+                        </button>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Cleaners Tab -->
+    <div class="tab-pane fade" [class.show]="activeTab === 'cleaners'" [class.active]="activeTab === 'cleaners'" id="cleaners" role="tabpanel">
+      <div class="row">
+        <div class="col-12">
+          <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+              <h5><i class="fas fa-broom me-2"></i>Cleaner Management</h5>
+              <div class="btn-group" role="group">
+                <button class="btn btn-primary" (click)="showCreateCleanerForm = true">
+                  <i class="fas fa-plus me-1"></i>Add Cleaner
+                </button>
+                <button class="btn btn-warning" (click)="loadPendingCleaners()">
+                  <i class="fas fa-clock me-1"></i>Pending Approval ({{ pendingCleanersCount }})
+                </button>
+              </div>
+            </div>
+            <div class="card-body">
+              <!-- Success/Error Messages -->
+              <div *ngIf="successMessage" class="alert alert-success alert-dismissible fade show" role="alert">
+                {{ successMessage }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+              </div>
+              <div *ngIf="errorMessage" class="alert alert-danger alert-dismissible fade show" role="alert">
+                {{ errorMessage }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+              </div>
+              
+              <!-- Pending Approval Section -->
+              <div *ngIf="showPendingCleaners && pendingCleaners.length > 0" class="mb-4">
+                <h6 class="text-warning mb-3">
+                  <i class="fas fa-clock me-2"></i>Cleaners Pending Approval
+                </h6>
+                <div class="table-responsive">
+                  <table class="table table-warning table-hover">
+                    <thead>
+                      <tr>
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th>Rate</th>
+                        <th>Bio</th>
+                        <th>Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr *ngFor="let cleaner of pendingCleaners">
+                        <td>{{ cleaner.firstName }} {{ cleaner.lastName }}</td>
+                        <td>{{ cleaner.email }}</td>
+                        <td>{{ cleaner.hourlyRate | currency }}/hr</td>
+                        <td>{{ cleaner.bio || 'No bio provided' }}</td>
+                        <td>
+                          <button class="btn btn-sm btn-success me-1" (click)="approveCleaner(cleaner.id)">
+                            <i class="fas fa-check me-1"></i>Approve
+                          </button>
+                          <button class="btn btn-sm btn-danger" (click)="rejectCleaner(cleaner.id)">
+                            <i class="fas fa-times me-1"></i>Reject
+                          </button>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              <!-- All Cleaners Section -->
+              <div class="table-responsive">
+                <table class="table table-hover">
+                  <thead>
+                    <tr>
+                      <th>Photo</th>
+                      <th>Name</th>
+                      <th>Email</th>
+                      <th>Rate</th>
+                      <th>Status</th>
+                      <th>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr *ngFor="let cleaner of cleaners">
+                      <td>
+                        <img [src]="cleaner.profilePicture || 'assets/images/default-cleaner.svg'" 
+                             [alt]="cleaner.firstName + ' ' + cleaner.lastName"
+                             class="rounded-circle" 
+                             style="width: 40px; height: 40px; object-fit: cover;">
+                      </td>
+                      <td>{{ cleaner.firstName }} {{ cleaner.lastName }}</td>
+                      <td>{{ cleaner.email }}</td>
+                      <td>{{ cleaner.hourlyRate | currency }}/hr</td>
+                      <td>
+                        <span class="badge" [ngClass]="getStatusClass(cleaner.cleanerStatus)">
+                          {{ cleaner.cleanerStatus }}
+                        </span>
+                      </td>
+                      <td>
+                        <div *ngIf="cleaner.cleanerStatus === 'PENDING_APPROVAL'" class="btn-group">
+                          <button class="btn btn-sm btn-success me-1" (click)="approveCleaner(cleaner.id)">
+                            <i class="fas fa-check me-1"></i>Approve
+                          </button>
+                          <button class="btn btn-sm btn-danger me-1" (click)="rejectCleaner(cleaner.id)">
+                            <i class="fas fa-times me-1"></i>Reject
+                          </button>
+                        </div>
+                        <div *ngIf="cleaner.cleanerStatus !== 'PENDING_APPROVAL'" class="btn-group">
+                          <button class="btn btn-sm btn-outline-primary me-1">Edit</button>
+                          <button class="btn btn-sm btn-outline-danger">Delete</button>
+                        </div>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bookings Tab -->
+    <div class="tab-pane fade" [class.show]="activeTab === 'bookings'" [class.active]="activeTab === 'bookings'" id="bookings" role="tabpanel">
+      <div class="row">
+        <div class="col-12">
+          <div class="card">
+            <div class="card-header">
+              <h5><i class="fas fa-calendar-check me-2"></i>All Bookings</h5>
+            </div>
+            <div class="card-body">
+              <div class="table-responsive">
+                <table class="table table-hover">
+                  <thead>
+                    <tr>
+                      <th>Date</th>
+                      <th>Customer</th>
+                      <th>Cleaner</th>
+                      <th>Duration</th>
+                      <th>Amount</th>
+                      <th>Status</th>
+                      <th>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr *ngFor="let booking of bookings">
+                      <td>{{ formatDate(booking.bookingDate) }}</td>
+                      <td>{{ booking.customer.firstName }} {{ booking.customer.lastName }}</td>
+                      <td>{{ booking.cleaner.firstName }} {{ booking.cleaner.lastName }}</td>
+                      <td>{{ booking.durationHours }}h</td>
+                      <td>{{ booking.totalAmount | currency }}</td>
+                      <td>
+                        <span class="badge" [ngClass]="getStatusClass(booking.status)">
+                          {{ booking.status }}
+                        </span>
+                      </td>
+                      <td>
+                        <button class="btn btn-sm btn-outline-primary me-1">View</button>
+                        <button class="btn btn-sm btn-outline-warning">Edit</button>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- System Management Tab -->
+    <div class="tab-pane fade" [class.show]="activeTab === 'system'" [class.active]="activeTab === 'system'" id="system" role="tabpanel">
+      <div class="row">
+        <div class="col-md-6">
+          <div class="card">
+            <div class="card-header">
+              <h5><i class="fas fa-tools me-2"></i>System Management</h5>
+            </div>
+            <div class="card-body">
+              <div class="d-grid gap-2">
+                <button class="btn btn-primary" (click)="showCreateAdminForm = true">
+                  <i class="fas fa-user-plus me-2"></i>Create New Admin
+                </button>
+                <button class="btn btn-info">
+                  <i class="fas fa-chart-bar me-2"></i>Generate Reports
+                </button>
+                <button class="btn btn-warning">
+                  <i class="fas fa-cog me-2"></i>System Configuration
+                </button>
+                <button class="btn btn-success">
+                  <i class="fas fa-database me-2"></i>Database Management
+                </button>
+                <button class="btn btn-secondary">
+                  <i class="fas fa-envelope me-2"></i>Bulk Notifications
+                </button>
+                <button class="btn btn-danger">
+                  <i class="fas fa-shield-alt me-2"></i>Security Settings
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-md-6">
+          <div class="card">
+            <div class="card-header">
+              <h5><i class="fas fa-info-circle me-2"></i>System Information</h5>
+            </div>
+            <div class="card-body">
+              <div class="row mb-3">
+                <div class="col-6">
+                  <strong>Application Version:</strong>
+                </div>
+                <div class="col-6">
+                  1.0.0
+                </div>
+              </div>
+              <div class="row mb-3">
+                <div class="col-6">
+                  <strong>Database Status:</strong>
+                </div>
+                <div class="col-6">
+                  <span class="badge bg-success">Connected</span>
+                </div>
+              </div>
+              <div class="row mb-3">
+                <div class="col-6">
+                  <strong>Last Backup:</strong>
+                </div>
+                <div class="col-6">
+                  {{ getCurrentDate() }}
+                </div>
+              </div>
+              <div class="row mb-3">
+                <div class="col-6">
+                  <strong>Active Sessions:</strong>
+                </div>
+                <div class="col-6">
+                  {{ totalUsers }}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Create Admin Modal -->
+  <div class="modal fade" [class.show]="showCreateAdminForm" [style.display]="showCreateAdminForm ? 'block' : 'none'" 
+       tabindex="-1" role="dialog" *ngIf="showCreateAdminForm">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">
+            <i class="fas fa-user-plus me-2"></i>Create New Admin
+          </h5>
+          <button type="button" class="btn-close" (click)="closeCreateAdminForm()" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <div class="alert alert-danger" *ngIf="errorMessage">
+            <i class="fas fa-exclamation-triangle me-2"></i>{{ errorMessage }}
+          </div>
+          <div class="alert alert-success" *ngIf="successMessage">
+            <i class="fas fa-check-circle me-2"></i>{{ successMessage }}
+          </div>
+          
+          <form (ngSubmit)="createAdmin()" #adminForm="ngForm">
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                <label class="form-label">First Name *</label>
+                <input type="text" class="form-control" [(ngModel)]="newAdmin.firstName" 
+                       name="firstName" required #firstName="ngModel"
+                       [class.is-invalid]="firstName.invalid && firstName.touched">
+                <div class="invalid-feedback" *ngIf="firstName.invalid && firstName.touched">
+                  First name is required
+                </div>
+              </div>
+              <div class="col-md-6 mb-3">
+                <label class="form-label">Last Name *</label>
+                <input type="text" class="form-control" [(ngModel)]="newAdmin.lastName" 
+                       name="lastName" required #lastName="ngModel"
+                       [class.is-invalid]="lastName.invalid && lastName.touched">
+                <div class="invalid-feedback" *ngIf="lastName.invalid && lastName.touched">
+                  Last name is required
+                </div>
+              </div>
+            </div>
+            
+            <div class="mb-3">
+              <label class="form-label">Email *</label>
+              <input type="email" class="form-control" [(ngModel)]="newAdmin.email" 
+                     name="email" required email #email="ngModel"
+                     [class.is-invalid]="email.invalid && email.touched">
+              <div class="invalid-feedback" *ngIf="email.invalid && email.touched">
+                Valid email is required
+              </div>
+            </div>
+            
+            <div class="mb-3">
+              <label class="form-label">Username *</label>
+              <input type="text" class="form-control" [(ngModel)]="newAdmin.username" 
+                     name="username" required minlength="3" #username="ngModel"
+                     [class.is-invalid]="username.invalid && username.touched">
+              <div class="invalid-feedback" *ngIf="username.invalid && username.touched">
+                Username must be at least 3 characters
+              </div>
+            </div>
+            
+            <div class="mb-3">
+              <label class="form-label">Password *</label>
+              <input type="password" class="form-control" [(ngModel)]="newAdmin.password" 
+                     name="password" required minlength="6" #password="ngModel"
+                     [class.is-invalid]="password.invalid && password.touched">
+              <div class="invalid-feedback" *ngIf="password.invalid && password.touched">
+                Password must be at least 6 characters
+              </div>
+            </div>
+            
+            <div class="mb-3">
+              <label class="form-label">Phone Number</label>
+              <input type="tel" class="form-control" [(ngModel)]="newAdmin.phoneNumber" 
+                     name="phoneNumber">
+            </div>
+            
+            <div class="mb-3">
+              <label class="form-label">Admin Level *</label>
+              <select class="form-select" [(ngModel)]="newAdmin.adminLevel" name="adminLevel" required>
+                <option value="ADMIN">Admin</option>
+                <option value="SUPER_ADMIN">Super Admin</option>
+              </select>
+            </div>
+            
+            <div class="d-grid gap-2">
+              <button type="submit" class="btn btn-primary" [disabled]="adminForm.invalid || isCreating">
+                <span *ngIf="isCreating" class="spinner-border spinner-border-sm me-2"></span>
+                <i class="fas fa-user-plus me-2"></i>
+                {{ isCreating ? 'Creating...' : 'Create Admin' }}
+              </button>
+              <button type="button" class="btn btn-secondary" (click)="closeCreateAdminForm()">
+                <i class="fas fa-times me-2"></i>Cancel
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Modal Backdrop -->
+  <div class="modal-backdrop fade" [class.show]="showCreateAdminForm" *ngIf="showCreateAdminForm"></div>
+
+  <!-- Create Cleaner Modal -->
+  <div class="modal fade" [class.show]="showCreateCleanerForm" [style.display]="showCreateCleanerForm ? 'block' : 'none'" 
+       tabindex="-1" role="dialog" *ngIf="showCreateCleanerForm">
+    <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">
+            <i class="fas fa-user-plus me-2"></i>Create New Cleaner
+          </h5>
+          <button type="button" class="btn-close" (click)="closeCreateCleanerForm()" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <div class="alert alert-danger" *ngIf="errorMessage">
+            <i class="fas fa-exclamation-triangle me-2"></i>{{ errorMessage }}
+          </div>
+          <div class="alert alert-success" *ngIf="successMessage">
+            <i class="fas fa-check-circle me-2"></i>{{ successMessage }}
+          </div>
+          
+          <form (ngSubmit)="createCleaner()" #cleanerForm="ngForm">
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                <label class="form-label">First Name *</label>
+                <input type="text" class="form-control" [(ngModel)]="newCleaner.firstName" 
+                       name="firstName" required #firstName="ngModel"
+                       [class.is-invalid]="firstName.invalid && firstName.touched">
+                <div class="invalid-feedback" *ngIf="firstName.invalid && firstName.touched">
+                  First name is required
+                </div>
+              </div>
+              <div class="col-md-6 mb-3">
+                <label class="form-label">Last Name *</label>
+                <input type="text" class="form-control" [(ngModel)]="newCleaner.lastName" 
+                       name="lastName" required #lastName="ngModel"
+                       [class.is-invalid]="lastName.invalid && lastName.touched">
+                <div class="invalid-feedback" *ngIf="lastName.invalid && lastName.touched">
+                  Last name is required
+                </div>
+              </div>
+            </div>
+            
+            <div class="mb-3">
+              <label class="form-label">Email *</label>
+              <input type="email" class="form-control" [(ngModel)]="newCleaner.email" 
+                     name="email" required email #email="ngModel"
+                     [class.is-invalid]="email.invalid && email.touched">
+              <div class="invalid-feedback" *ngIf="email.invalid && email.touched">
+                Valid email is required
+              </div>
+            </div>
+            
+            <div class="mb-3">
+              <label class="form-label">Username *</label>
+              <input type="text" class="form-control" [(ngModel)]="newCleaner.username" 
+                     name="username" required minlength="3" #username="ngModel"
+                     [class.is-invalid]="username.invalid && username.touched">
+              <div class="invalid-feedback" *ngIf="username.invalid && username.touched">
+                Username must be at least 3 characters
+              </div>
+            </div>
+            
+            <div class="mb-3">
+              <label class="form-label">Password *</label>
+              <input type="password" class="form-control" [(ngModel)]="newCleaner.password" 
+                     name="password" required minlength="6" #password="ngModel"
+                     [class.is-invalid]="password.invalid && password.touched">
+              <div class="invalid-feedback" *ngIf="password.invalid && password.touched">
+                Password must be at least 6 characters
+              </div>
+            </div>
+            
+            <div class="mb-3">
+              <label class="form-label">Phone Number</label>
+              <input type="tel" class="form-control" [(ngModel)]="newCleaner.phoneNumber" 
+                     name="phoneNumber">
+            </div>
+            
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                <label class="form-label">Address *</label>
+                <input type="text" class="form-control" [(ngModel)]="newCleaner.address" 
+                       name="address" required #address="ngModel"
+                       [class.is-invalid]="address.invalid && address.touched">
+                <div class="invalid-feedback" *ngIf="address.invalid && address.touched">
+                  Address is required
+                </div>
+              </div>
+              <div class="col-md-6 mb-3">
+                <label class="form-label">City</label>
+                <input type="text" class="form-control" [(ngModel)]="newCleaner.city" 
+                       name="city">
+              </div>
+            </div>
+            
+            <div class="row">
+              <div class="col-md-4 mb-3">
+                <label class="form-label">Region</label>
+                <input type="text" class="form-control" [(ngModel)]="newCleaner.region" 
+                       name="region">
+              </div>
+              <div class="col-md-4 mb-3">
+                <label class="form-label">Postal Code</label>
+                <input type="text" class="form-control" [(ngModel)]="newCleaner.postalCode" 
+                       name="postalCode">
+              </div>
+              <div class="col-md-4 mb-3">
+                <label class="form-label">Country *</label>
+                <input type="text" class="form-control" [(ngModel)]="newCleaner.country" 
+                       name="country" required #country="ngModel"
+                       [class.is-invalid]="country.invalid && country.touched">
+                <div class="invalid-feedback" *ngIf="country.invalid && country.touched">
+                  Country is required
+                </div>
+              </div>
+            </div>
+            
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                <label class="form-label">Hourly Rate *</label>
+                <input type="number" class="form-control" [(ngModel)]="newCleaner.hourlyRate" 
+                       name="hourlyRate" required min="0" step="0.01" #hourlyRate="ngModel"
+                       [class.is-invalid]="hourlyRate.invalid && hourlyRate.touched">
+                <div class="invalid-feedback" *ngIf="hourlyRate.invalid && hourlyRate.touched">
+                  Valid hourly rate is required
+                </div>
+              </div>
+              <!-- Initial status is controlled by approval flow; no manual selection here -->
+            </div>
+            
+            <div class="mb-3">
+              <label class="form-label">Bio</label>
+              <textarea class="form-control" [(ngModel)]="newCleaner.bio" 
+                        name="bio" rows="3" placeholder="Tell us about your cleaning experience..."></textarea>
+            </div>
+            
+            <div class="mb-3">
+              <label class="form-label">Profile Picture URL</label>
+              <input type="url" class="form-control" [(ngModel)]="newCleaner.profilePicture" 
+                     name="profilePicture" placeholder="https://example.com/image.jpg">
+              <div class="form-text">Optional: Add a profile picture URL for the cleaner</div>
+            </div>
+            
+            <div class="d-grid gap-2">
+              <button type="submit" class="btn btn-primary" [disabled]="cleanerForm.invalid || isCreating">
+                <span *ngIf="isCreating" class="spinner-border spinner-border-sm me-2"></span>
+                <i class="fas fa-user-plus me-2"></i>
+                {{ isCreating ? 'Creating...' : 'Create Cleaner' }}
+              </button>
+              <button type="button" class="btn btn-secondary" (click)="closeCreateCleanerForm()">
+                <i class="fas fa-times me-2"></i>Cancel
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Cleaner Modal Backdrop -->
+  <div class="modal-backdrop fade" [class.show]="showCreateCleanerForm" *ngIf="showCreateCleanerForm"></div>
+</div>

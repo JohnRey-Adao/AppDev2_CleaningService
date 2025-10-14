@@ -1,0 +1,156 @@
+<div class="dashboard-container">
+  <div class="row mb-4">
+    <div class="col-12">
+      <h2><i class="fas fa-broom me-2"></i>Cleaner Dashboard</h2>
+      <hr>
+    </div>
+  </div>
+
+  <!-- Navigation Tabs -->
+  <div class="row mb-4">
+    <div class="col-12">
+      <ul class="nav nav-tabs">
+        <li class="nav-item">
+          <button class="nav-link" [class.active]="activeTab==='overview'" (click)="setActiveTab('overview')">
+            <i class="fas fa-chart-line me-2"></i>Overview
+          </button>
+        </li>
+        <li class="nav-item">
+          <button class="nav-link" [class.active]="activeTab==='jobs'" (click)="setActiveTab('jobs')">
+            <i class="fas fa-list me-2"></i>My Jobs
+          </button>
+        </li>
+        <li class="nav-item">
+          <button class="nav-link" [class.active]="activeTab==='profile'" (click)="setActiveTab('profile')">
+            <i class="fas fa-user me-2"></i>Profile
+          </button>
+        </li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="tab-content">
+    <!-- Overview Tab -->
+    <div class="tab-pane" [class.active]="activeTab==='overview'">
+      <div class="row mb-4">
+        <div class="col-md-3" *ngFor="let card of [
+          {icon:'calendar-check', title:'Total Jobs', value: totalJobs, cls:'text-primary'},
+          {icon:'clock', title:'Pending', value: pendingJobs, cls:'text-warning'},
+          {icon:'check-circle', title:'Completed', value: completedJobs, cls:'text-success'},
+          {icon:'dollar-sign', title:'Earnings', value: (totalEarnings | currency), cls:'text-info'}
+        ]; let i = index">
+          <div class="card text-center">
+            <div class="card-body">
+              <i class="fas fa-{{card.icon}} fa-2x {{card.cls}} mb-2"></i>
+              <h5 class="card-title">{{ card.title }}</h5>
+              <h3 [ngClass]="card.cls">{{ card.value }}</h3>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="col-md-6">
+          <div class="card">
+            <div class="card-header">
+              <h5><i class="fas fa-chart-line me-2"></i>Quick Stats</h5>
+            </div>
+            <div class="card-body">
+              <p><strong>Average Rating:</strong> 4.8/5</p>
+              <p><strong>Jobs This Month:</strong> {{ jobsThisMonth }}</p>
+              <p><strong>Earnings This Month:</strong> {{ earningsThisMonth | currency }}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Jobs Tab -->
+    <div class="tab-pane" [class.active]="activeTab==='jobs'">
+      <div class="row">
+        <div class="col-12">
+          <div class="card">
+            <div class="card-header">
+              <h5><i class="fas fa-list me-2"></i>My Jobs</h5>
+            </div>
+            <div class="card-body">
+              <div class="table-responsive">
+                <table class="table table-hover">
+                  <thead>
+                    <tr>
+                      <th>Date</th>
+                      <th>Customer</th>
+                      <th>Duration</th>
+                      <th>Amount</th>
+                      <th>Status</th>
+                      <th>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr *ngFor="let booking of bookings">
+                      <td>{{ formatDate(booking.bookingDate) }}</td>
+                      <td>{{ booking.customer.firstName }} {{ booking.customer.lastName }}</td>
+                      <td>{{ booking.durationHours }}h</td>
+                      <td>{{ booking.totalAmount | currency }}</td>
+                      <td>
+                        <span class="badge" [ngClass]="getStatusClass(booking.status)">
+                          {{ booking.status }}
+                        </span>
+                      </td>
+                      <td>
+                        <button class="btn btn-sm btn-success me-1" 
+                                *ngIf="booking.status === 'PENDING'"
+                                (click)="confirmBooking(booking.id)">
+                          Confirm
+                        </button>
+                        <button class="btn btn-sm btn-primary me-1" 
+                                *ngIf="booking.status === 'CONFIRMED'"
+                                (click)="startBooking(booking.id)">
+                          Start
+                        </button>
+                        <button class="btn btn-sm btn-success me-1" 
+                                *ngIf="booking.status === 'IN_PROGRESS'"
+                                (click)="completeBooking(booking.id)">
+                          Complete
+                        </button>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Profile Tab -->
+    <div class="tab-pane" [class.active]="activeTab==='profile'">
+      <div class="row">
+        <div class="col-md-6">
+          <div class="card">
+            <div class="card-header">
+              <h5><i class="fas fa-user me-2"></i>My Profile</h5>
+            </div>
+            <div class="card-body">
+              <p><strong>Name:</strong> {{ cleaner?.firstName }} {{ cleaner?.lastName }}</p>
+              <p><strong>Email:</strong> {{ cleaner?.email }}</p>
+              <p><strong>Phone:</strong> {{ cleaner?.phoneNumber || 'Not provided' }}</p>
+              <p><strong>Address:</strong> {{ cleaner?.address }}</p>
+              <p><strong>Hourly Rate:</strong> {{ cleaner?.hourlyRate | currency }}/hr</p>
+              <p><strong>Status:</strong> 
+                <span class="badge" [ngClass]="getStatusClass(cleaner?.cleanerStatus || '')">
+                  {{ cleaner?.cleanerStatus }}
+                </span>
+              </p>
+              <button class="btn btn-outline-primary btn-sm me-2">Edit Profile</button>
+              <button class="btn btn-outline-secondary btn-sm" (click)="toggleStatus()">
+                {{ cleaner?.cleanerStatus === 'AVAILABLE' ? 'Go Offline' : 'Go Online' }}
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
