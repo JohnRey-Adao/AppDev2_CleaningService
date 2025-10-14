@@ -16,21 +16,6 @@ import { HttpClient } from '@angular/common/http';
             <h4><i class="fas fa-user-plus me-2"></i>Register</h4>
           </div>
           <div class="card-body">
-            <ul class="nav nav-tabs mb-4" id="registerTabs" role="tablist">
-              <li class="nav-item" role="presentation">
-                <button class="nav-link" [class.active]="userType === 'customer'" 
-                        (click)="setUserType('customer')" type="button">
-                  <i class="fas fa-home me-2"></i>Customer
-                </button>
-              </li>
-              <li class="nav-item" role="presentation">
-                <button class="nav-link" [class.active]="userType === 'cleaner'" 
-                        (click)="setUserType('cleaner')" type="button">
-                  <i class="fas fa-broom me-2"></i>Cleaner
-                </button>
-              </li>
-            </ul>
-
             <form [formGroup]="registerForm" (ngSubmit)="onSubmit()">
               <div class="row">
                 <div class="col-md-6 mb-3">
@@ -190,38 +175,11 @@ import { HttpClient } from '@angular/common/http';
                   >
                 </div>
               </div>
-
-              <div class="mb-3" *ngIf="userType === 'cleaner'">
-                <label for="hourlyRate" class="form-label">Hourly Rate (₱)</label>
-                <input 
-                  type="number" 
-                  class="form-control" 
-                  id="hourlyRate"
-                  formControlName="hourlyRate"
-                  step="0.01"
-                  min="0.01"
-                  [class.is-invalid]="registerForm.get('hourlyRate')?.invalid && registerForm.get('hourlyRate')?.touched"
-                >
-                <div class="invalid-feedback" *ngIf="registerForm.get('hourlyRate')?.invalid && registerForm.get('hourlyRate')?.touched">
-                  Hourly rate is required and must be greater than 0
-                </div>
-              </div>
-
-              <div class="mb-3" *ngIf="userType === 'cleaner'">
-                <label for="bio" class="form-label">Bio</label>
-                <textarea 
-                  class="form-control" 
-                  id="bio"
-                  formControlName="bio"
-                  rows="3"
-                  placeholder="Tell us about your cleaning experience and specialties..."
-                ></textarea>
-              </div>
               
               <div class="d-grid">
                 <button type="submit" class="btn btn-primary" [disabled]="registerForm.invalid || isLoading">
                   <span *ngIf="isLoading" class="spinner-border spinner-border-sm me-2"></span>
-                  Register as {{ userType === 'customer' ? 'Customer' : 'Cleaner' }}
+                  Register
                 </button>
               </div>
             </form>
@@ -246,7 +204,6 @@ import { HttpClient } from '@angular/common/http';
 })
 export class RegisterComponent {
   registerForm: FormGroup;
-  userType: 'customer' | 'cleaner' = 'customer';
   isLoading = false;
   errorMessage = '';
   successMessage = '';
@@ -267,23 +224,8 @@ export class RegisterComponent {
       city: [''],
       region: [''],
       postalCode: [''],
-      country: ['Philippines'],
-      hourlyRate: [null],
-      bio: ['']
+      country: ['Philippines']
     });
-  }
-
-  setUserType(type: 'customer' | 'cleaner') {
-    this.userType = type;
-    this.errorMessage = '';
-    this.successMessage = '';
-    
-    if (type === 'cleaner') {
-      this.registerForm.get('hourlyRate')?.setValidators([Validators.required, Validators.min(0.01)]);
-    } else {
-      this.registerForm.get('hourlyRate')?.clearValidators();
-    }
-    this.registerForm.get('hourlyRate')?.updateValueAndValidity();
   }
 
   onSubmit() {
@@ -294,22 +236,10 @@ export class RegisterComponent {
       
       const formData = { ...this.registerForm.value };
       
-      // Remove cleaner-specific fields for customer registration
-      if (this.userType === 'customer') {
-        delete formData.hourlyRate;
-        delete formData.bio;
-      }
-      
-      const endpoint = this.userType === 'customer' ? '/api/customers/register' : '/api/cleaners/register';
-      
-      this.http.post(`http://localhost:8080${endpoint}`, formData).subscribe({
-        next: (response) => {
+      this.http.post(`http://localhost:8080/api/customers/register`, formData).subscribe({
+        next: () => {
           this.isLoading = false;
-          if (this.userType === 'cleaner') {
-            this.successMessage = 'Registration received! Your account is pending approval by an administrator. You will be able to log in once approved.';
-          } else {
-            this.successMessage = 'Registration successful! You can now log in as a customer.';
-          }
+          this.successMessage = 'Registration successful! You can now log in as a customer.';
           this.registerForm.reset();
           this.registerForm.patchValue({ country: 'Philippines' });
         },

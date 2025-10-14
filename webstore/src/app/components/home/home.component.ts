@@ -26,7 +26,7 @@ import { AuthService } from '../../services/auth.service';
 
     <div class="container">
       <div class="row">
-        <div class="col-lg-4 mb-4">
+        <div class="col-lg-12 mb-4">
           <div class="card h-100 text-center">
             <div class="card-body">
               <i class="fas fa-home fa-3x text-primary mb-3"></i>
@@ -36,61 +36,32 @@ import { AuthService } from '../../services/auth.service';
             </div>
           </div>
         </div>
-        
-        <div class="col-lg-4 mb-4">
-          <div class="card h-100 text-center">
-            <div class="card-body">
-              <i class="fas fa-broom fa-3x text-success mb-3"></i>
-              <h5 class="card-title">For Cleaners</h5>
-              <p class="card-text">Join our network of professional cleaners. Set your rates, manage your schedule, and grow your business.</p>
-              <a routerLink="/register" class="btn btn-success">Register as Cleaner</a>
-            </div>
-          </div>
-        </div>
-        
-        <div class="col-lg-4 mb-4">
-          <div class="card h-100 text-center">
-            <div class="card-body">
-              <i class="fas fa-cog fa-3x text-warning mb-3"></i>
-              <h5 class="card-title">For Administrators</h5>
-              <p class="card-text">Manage the platform, oversee operations, and ensure quality service delivery across all bookings.</p>
-              <a routerLink="/login" class="btn btn-warning">Admin Login</a>
-            </div>
-          </div>
-        </div>
       </div>
-
+      
       <div class="row mt-5">
         <div class="col-12">
           <h2 class="text-center mb-4">How It Works</h2>
           <div class="row">
-            <div class="col-md-3 text-center mb-4">
+            <div class="col-md-4 text-center mb-4">
               <div class="step-number bg-primary text-white rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 60px; height: 60px;">
                 <span class="fw-bold">1</span>
               </div>
               <h5>Register</h5>
-              <p>Create your account as a customer or cleaner</p>
+              <p>Create your customer account to get started.</p>
             </div>
-            <div class="col-md-3 text-center mb-4">
+            <div class="col-md-4 text-center mb-4">
               <div class="step-number bg-primary text-white rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 60px; height: 60px;">
                 <span class="fw-bold">2</span>
               </div>
               <h5>Browse</h5>
-              <p>Find available cleaners or customers in your area</p>
+              <p>Find available cleaners in your area.</p>
             </div>
-            <div class="col-md-3 text-center mb-4">
+            <div class="col-md-4 text-center mb-4">
               <div class="step-number bg-primary text-white rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 60px; height: 60px;">
                 <span class="fw-bold">3</span>
               </div>
               <h5>Book</h5>
-              <p>Schedule cleaning services at your convenience</p>
-            </div>
-            <div class="col-md-3 text-center mb-4">
-              <div class="step-number bg-primary text-white rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 60px; height: 60px;">
-                <span class="fw-bold">4</span>
-              </div>
-              <h5>Enjoy</h5>
-              <p>Relax while we take care of your cleaning needs</p>
+              <p>Schedule cleaning services at your convenience and enjoy.</p>
             </div>
           </div>
         </div>

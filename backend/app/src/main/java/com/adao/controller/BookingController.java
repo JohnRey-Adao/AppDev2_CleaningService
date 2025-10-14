@@ -52,6 +52,13 @@ public class BookingController {
         return ResponseEntity.ok(bookings);
     }
 
+    @GetMapping("/cleaner/{cleanerId}")
+    @PreAuthorize("hasRole('CLEANER') or hasRole('ADMIN') or hasRole('SUPER_ADMIN')")
+    public ResponseEntity<List<Booking>> getBookingsByCleaner(@PathVariable("cleanerId") Long cleanerId) {
+        List<Booking> bookings = bookingService.getBookingsByCleaner(cleanerId);
+        return ResponseEntity.ok(bookings);
+    }
+
     @GetMapping("/availability/{cleanerId}/{date}")
     public ResponseEntity<Boolean> checkCleanerAvailability(@PathVariable("cleanerId") Long cleanerId, 
                                                            @PathVariable("date") String date) {

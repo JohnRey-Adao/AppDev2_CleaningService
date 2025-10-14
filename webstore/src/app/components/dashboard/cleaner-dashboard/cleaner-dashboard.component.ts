@@ -1,7 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Cleaner, Booking } from '../../../models/user.model';
+import { AuthService } from '../../../services/auth.service';
 
 @Component({
   selector: 'app-cleaner-dashboard',
@@ -21,7 +22,7 @@ export class CleanerDashboardComponent implements OnInit {
   earningsThisMonth = 0;
   activeTab = 'overview';
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient, private authService: AuthService) {}
 
   ngOnInit() {
     this.loadCleanerData();
@@ -32,9 +33,19 @@ export class CleanerDashboardComponent implements OnInit {
     this.activeTab = tabName;
   }
 
+  private getAuthHeaders(): HttpHeaders {
+    const token = this.authService.getToken();
+    return new HttpHeaders({
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json'
+    });
+  }
+
   loadCleanerData() {
-    const cleanerId = 2; // This should come from the logged-in user
-    this.http.get<Cleaner>(`http://localhost:8080/api/cleaners/${cleanerId}`).subscribe({
+    const currentUser = this.authService.getCurrentUser();
+    if (!currentUser) return;
+    const cleanerId = currentUser.id;
+    this.http.get<Cleaner>(`http://localhost:8080/api/cleaners/${cleanerId}`, { headers: this.getAuthHeaders() }).subscribe({
       next: (cleaner) => {
         this.cleaner = cleaner;
       },
@@ -45,8 +56,10 @@ export class CleanerDashboardComponent implements OnInit {
   }
 
   loadBookings() {
-    const cleanerId = 2; // This should come from the logged-in user
-    this.http.get<Booking[]>(`http://localhost:8080/api/bookings/cleaner/${cleanerId}`).subscribe({
+    const currentUser = this.authService.getCurrentUser();
+    if (!currentUser) return;
+    const cleanerId = currentUser.id;
+    this.http.get<Booking[]>(`http://localhost:8080/api/bookings/cleaner/${cleanerId}`, { headers: this.getAuthHeaders() }).subscribe({
       next: (bookings) => {
         this.bookings = bookings;
         this.calculateStats();
@@ -80,7 +93,7 @@ export class CleanerDashboardComponent implements OnInit {
   }
 
   confirmBooking(bookingId: number) {
-    this.http.put(`http://localhost:8080/api/bookings/${bookingId}/confirm`, {}).subscribe({
+    this.http.put(`http://localhost:8080/api/bookings/${bookingId}/confirm`, {}, { headers: this.getAuthHeaders() }).subscribe({
       next: () => {
         this.loadBookings();
       },
@@ -91,7 +104,7 @@ export class CleanerDashboardComponent implements OnInit {
   }
 
   startBooking(bookingId: number) {
-    this.http.put(`http://localhost:8080/api/bookings/${bookingId}/start`, {}).subscribe({
+    this.http.put(`http://localhost:8080/api/bookings/${bookingId}/start`, {}, { headers: this.getAuthHeaders() }).subscribe({
       next: () => {
         this.loadBookings();
       },
@@ -102,7 +115,7 @@ export class CleanerDashboardComponent implements OnInit {
   }
 
   completeBooking(bookingId: number) {
-    this.http.put(`http://localhost:8080/api/bookings/${bookingId}/complete`, {}).subscribe({
+    this.http.put(`http://localhost:8080/api/bookings/${bookingId}/complete`, {}, { headers: this.getAuthHeaders() }).subscribe({
       next: () => {
         this.loadBookings();
       },
@@ -116,7 +129,7 @@ export class CleanerDashboardComponent implements OnInit {
     if (!this.cleaner) return;
     
     const newStatus = this.cleaner.cleanerStatus === 'AVAILABLE' ? 'OFFLINE' : 'AVAILABLE';
-    this.http.put(`http://localhost:8080/api/cleaners/${this.cleaner.id}/status?status=${newStatus}`, {}).subscribe({
+    this.http.put(`http://localhost:8080/api/cleaners/${this.cleaner.id}/status?status=${newStatus}`, {}, { headers: this.getAuthHeaders() }).subscribe({
       next: () => {
         this.loadCleanerData();
       },

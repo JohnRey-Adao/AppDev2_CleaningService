@@ -12,3 +12,4 @@ public class CleaningServiceApplication {
         SpringApplication.run(CleaningServiceApplication.class, args);
     }
 }
+

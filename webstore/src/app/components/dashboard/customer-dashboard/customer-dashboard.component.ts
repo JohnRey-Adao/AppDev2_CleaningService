@@ -4,6 +4,8 @@ import { FormsModule } from '@angular/forms';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Customer, Cleaner, Booking } from '../../../models/user.model';
 import { AuthService } from '../../../services/auth.service';
+import { forkJoin, of } from 'rxjs';
+import { catchError, map } from 'rxjs/operators';
 
 @Component({
   selector: 'app-customer-dashboard',
@@ -56,6 +58,7 @@ export class CustomerDashboardComponent implements OnInit {
   successMessage = '';
   filteredCleaners: Cleaner[] = [];
   selectedDate = '';
+  isFiltering = false;
 
   constructor(private http: HttpClient, private authService: AuthService) {}
 
@@ -267,23 +270,31 @@ export class CustomerDashboardComponent implements OnInit {
       return;
     }
 
-    this.filteredCleaners = [];
-    this.availableCleaners.forEach(cleaner => {
-      this.checkCleanerAvailability(cleaner);
-    });
-  }
+    // Compute availability in parallel and update the list once to avoid flicker
+    this.isFiltering = true;
+    const checks = this.availableCleaners.map(cleaner =>
+      this.http.get<boolean>(`http://localhost:8080/api/bookings/availability/${cleaner.id}/${this.selectedDate}`, { headers: this.getAuthHeaders() })
+        .pipe(
+          map(isAvailable => (isAvailable ? cleaner : null)),
+          // On error, keep cleaner visible
+          catchError(() => of(cleaner))
+        )
+    );
 
-  checkCleanerAvailability(cleaner: Cleaner) {
-    this.http.get<boolean>(`http://localhost:8080/api/bookings/availability/${cleaner.id}/${this.selectedDate}`, { headers: this.getAuthHeaders() }).subscribe({
-      next: (isAvailable) => {
-        if (isAvailable) {
-          this.filteredCleaners.push(cleaner);
+    forkJoin(checks).subscribe({
+      next: results => {
+        const beforeSelected = this.selectedCleanerId;
+        this.filteredCleaners = results.filter((c): c is Cleaner => !!c);
+        // If previously selected cleaner becomes unavailable, clear selection
+        if (beforeSelected && !this.filteredCleaners.some(c => c.id === beforeSelected)) {
+          this.selectedCleanerId = null;
         }
+        this.isFiltering = false;
       },
-      error: (error) => {
-        console.error('Error checking availability:', error);
-        // If we can't check availability, include the cleaner anyway
-        this.filteredCleaners.push(cleaner);
+      error: () => {
+        // On unexpected error, fall back to showing all available cleaners
+        this.filteredCleaners = this.availableCleaners;
+        this.isFiltering = false;
       }
     });
   }
