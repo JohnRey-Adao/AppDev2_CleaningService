@@ -217,7 +217,60 @@
               <p><strong>Phone:</strong> {{ customer?.phoneNumber || 'Not provided' }}</p>
               <p><strong>Address:</strong> {{ customer?.address }}</p>
               <p><strong>City:</strong> {{ customer?.city || 'Not provided' }}</p>
-              <button class="btn btn-outline-primary btn-sm">Edit Profile</button>
+              <button class="btn btn-outline-primary btn-sm" (click)="editingProfile = true">Edit Profile</button>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6" *ngIf="editingProfile && customer">
+          <div class="card">
+            <div class="card-header">
+              <h5><i class="fas fa-edit me-2"></i>Edit Profile</h5>
+            </div>
+            <div class="card-body">
+              <form (ngSubmit)="saveCustomerProfile()">
+                <div class="row">
+                  <div class="col-md-6 mb-3">
+                    <label class="form-label">First Name</label>
+                    <input class="form-control" [(ngModel)]="customer.firstName" name="firstName">
+                  </div>
+                  <div class="col-md-6 mb-3">
+                    <label class="form-label">Last Name</label>
+                    <input class="form-control" [(ngModel)]="customer.lastName" name="lastName">
+                  </div>
+                </div>
+                <div class="mb-3">
+                  <label class="form-label">Phone</label>
+                  <input class="form-control" [(ngModel)]="customer.phoneNumber" name="phone">
+                </div>
+                <div class="mb-3">
+                  <label class="form-label">Address</label>
+                  <input class="form-control" [(ngModel)]="customer.address" name="address">
+                </div>
+                <div class="row">
+                  <div class="col-md-6 mb-3">
+                    <label class="form-label">City</label>
+                    <input class="form-control" [(ngModel)]="customer.city" name="city">
+                  </div>
+                  <div class="col-md-6 mb-3">
+                    <label class="form-label">Region</label>
+                    <input class="form-control" [(ngModel)]="customer.region" name="region">
+                  </div>
+                </div>
+                <div class="row">
+                  <div class="col-md-6 mb-3">
+                    <label class="form-label">Postal Code</label>
+                    <input class="form-control" [(ngModel)]="customer.postalCode" name="postalCode">
+                  </div>
+                  <div class="col-md-6 mb-3">
+                    <label class="form-label">Country</label>
+                    <input class="form-control" [(ngModel)]="customer.country" name="country">
+                  </div>
+                </div>
+                <div class="d-flex gap-2">
+                  <button class="btn btn-primary" type="submit">Save</button>
+                  <button class="btn btn-secondary" type="button" (click)="editingProfile = false">Cancel</button>
+                </div>
+              </form>
             </div>
           </div>
         </div>

@@ -59,6 +59,7 @@ export class CustomerDashboardComponent implements OnInit {
   filteredCleaners: Cleaner[] = [];
   selectedDate = '';
   isFiltering = false;
+  editingProfile = false;
 
   constructor(private http: HttpClient, private authService: AuthService) {}
 
@@ -102,6 +103,21 @@ export class CustomerDashboardComponent implements OnInit {
       console.error('No current user found');
       this.errorMessage = 'No user session found. Please log in again.';
     }
+  }
+
+  saveCustomerProfile() {
+    if (!this.customer) return;
+    this.http.put(`http://localhost:8080/api/profile/customer/${this.customer.id}`, this.customer, { headers: this.getAuthHeaders() }).subscribe({
+      next: () => {
+        this.successMessage = 'Profile updated successfully';
+        this.editingProfile = false;
+        setTimeout(() => this.successMessage = '', 2500);
+      },
+      error: () => {
+        this.errorMessage = 'Failed to update profile';
+        setTimeout(() => this.errorMessage = '', 3000);
+      }
+    });
   }
 
   loadBookings() {

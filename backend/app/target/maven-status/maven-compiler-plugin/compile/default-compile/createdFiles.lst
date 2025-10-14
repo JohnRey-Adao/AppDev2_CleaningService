@@ -1,6 +1,7 @@
 com\adao\config\DataInitializer.class
 com\adao\security\AuthTokenFilter.class
 com\adao\dto\CustomerRegistrationRequest.class
+com\adao\controller\UserProfileController.class
 com\adao\dto\CleanerRegistrationRequest.class
 com\adao\controller\AuthController.class
 com\adao\dto\BookingRequest.class
@@ -15,4 +16,5 @@ com\adao\dto\LoginRequest.class
 com\adao\CleaningServiceApplication.class
 com\adao\config\WebSecurityConfig.class
 com\adao\controller\BookingController.class
+com\adao\config\StaticResourceConfig.class
 com\adao\dto\JwtResponse.class

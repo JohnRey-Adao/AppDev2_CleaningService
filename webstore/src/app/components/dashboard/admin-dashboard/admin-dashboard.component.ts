@@ -15,7 +15,6 @@ import { AuthService } from '../../../services/auth.service';
 export class AdminDashboardComponent implements OnInit {
   customers: Customer[] = [];
   cleaners: Cleaner[] = [];
-  pendingCleaners: Cleaner[] = [];
   bookings: Booking[] = [];
   recentBookings: Booking[] = [];
   
@@ -33,8 +32,6 @@ export class AdminDashboardComponent implements OnInit {
 
   // Cleaner management
   showCreateCleanerForm = false;
-  showPendingCleaners = false;
-  pendingCleanersCount = 0;
   isCreating = false;
   errorMessage = '';
   successMessage = '';
@@ -62,12 +59,10 @@ export class AdminDashboardComponent implements OnInit {
     this.loadCustomers();
     this.loadCleaners();
     this.loadBookings();
-    this.loadPendingCleaners();
   }
 
   // Tab navigation methods
   setActiveTab(tabName: string) {
-    console.log('Switching to tab:', tabName);
     this.activeTab = tabName;
   }
 
@@ -156,28 +151,81 @@ export class AdminDashboardComponent implements OnInit {
       case 'BUSY': return 'bg-warning';
       case 'OFFLINE': return 'bg-secondary';
       case 'ON_BREAK': return 'bg-info';
-      case 'PENDING_APPROVAL': return 'bg-warning';
-      case 'REJECTED': return 'bg-danger';
       case 'ACTIVE': return 'bg-success';
       case 'INACTIVE': return 'bg-secondary';
       default: return 'bg-secondary';
     }
   }
 
-  // Cleaner management methods
-  loadPendingCleaners() {
-    this.http.get<Cleaner[]>('http://localhost:8080/api/cleaners/pending-approval', { headers: this.getAuthHeaders() }).subscribe({
-      next: (cleaners) => {
-        this.pendingCleaners = cleaners;
-        this.pendingCleanersCount = cleaners.length;
-        // Automatically show pending cleaners section if there are any
-        if (cleaners.length > 0) {
-          this.showPendingCleaners = true;
-        }
+  // Cleaner actions
+  viewCleaner(cleanerId: number) {
+    this.http.get<Cleaner>(`http://localhost:8080/api/cleaners/${cleanerId}`, { headers: this.getAuthHeaders() }).subscribe({
+      next: (cleaner) => {
+        alert(`${cleaner.firstName} ${cleaner.lastName}\nEmail: ${cleaner.email}\nRate: ₱${cleaner.hourlyRate}/hr\nStatus: ${cleaner.cleanerStatus}`);
       },
-      error: (error) => {
-        console.error('Error loading pending cleaners:', error);
-      }
+      error: () => alert('Failed to load cleaner details')
+    });
+  }
+
+  editCleanerRate(cleaner: Cleaner) {
+    const input = prompt('Enter new hourly rate (₱):', String(cleaner.hourlyRate));
+    if (input === null) return;
+    const newRate = Number(input);
+    if (isNaN(newRate) || newRate < 0) {
+      alert('Invalid rate');
+      return;
+    }
+    this.http.put<Cleaner>(`http://localhost:8080/api/cleaners/${cleaner.id}/rate?hourlyRate=${newRate}`, {}, { headers: this.getAuthHeaders() }).subscribe({
+      next: () => {
+        this.successMessage = 'Cleaner updated successfully';
+        this.loadCleaners();
+      },
+      error: () => alert('Failed to update cleaner')
+    });
+  }
+
+  deleteCleaner(cleanerId: number) {
+    if (!confirm('Delete this cleaner?')) return;
+    this.http.delete(`http://localhost:8080/api/cleaners/${cleanerId}`, { headers: this.getAuthHeaders() }).subscribe({
+      next: () => {
+        this.successMessage = 'Cleaner deleted';
+        this.loadCleaners();
+      },
+      error: () => alert('Failed to delete cleaner')
+    });
+  }
+
+  // Customer actions
+  viewCustomer(customerId: number) {
+    this.http.get<Customer>(`http://localhost:8080/api/customers/${customerId}`, { headers: this.getAuthHeaders() }).subscribe({
+      next: (customer) => {
+        alert(`${customer.firstName} ${customer.lastName}\nEmail: ${customer.email}\nPhone: ${customer.phoneNumber || 'N/A'}\nAddress: ${customer.address}`);
+      },
+      error: () => alert('Failed to load customer details')
+    });
+  }
+
+  editCustomer(customer: Customer) {
+    const newPhone = prompt('Update phone number:', customer.phoneNumber || '');
+    if (newPhone === null) return;
+    const updated: Customer = { ...customer, phoneNumber: newPhone } as Customer;
+    this.http.put<Customer>(`http://localhost:8080/api/customers/${customer.id}`, updated, { headers: this.getAuthHeaders() }).subscribe({
+      next: () => {
+        this.successMessage = 'Customer updated successfully';
+        this.loadCustomers();
+      },
+      error: () => alert('Failed to update customer')
+    });
+  }
+
+  deleteCustomer(customerId: number) {
+    if (!confirm('Delete this customer?')) return;
+    this.http.delete(`http://localhost:8080/api/customers/${customerId}`, { headers: this.getAuthHeaders() }).subscribe({
+      next: () => {
+        this.successMessage = 'Customer deleted';
+        this.loadCustomers();
+      },
+      error: () => alert('Failed to delete customer')
     });
   }
 
@@ -187,110 +235,19 @@ export class AdminDashboardComponent implements OnInit {
     this.successMessage = '';
 
     this.http.post('http://localhost:8080/api/cleaners/register', this.newCleaner, { headers: this.getAuthHeaders() }).subscribe({
-      next: (response) => {
+      next: () => {
         this.isCreating = false;
         this.successMessage = 'Cleaner created successfully!';
         this.loadCleaners();
         this.closeCreateCleanerForm();
         this.resetNewCleanerForm();
-        
-        // Clear success message after 3 seconds
-        setTimeout(() => {
-          this.successMessage = '';
-        }, 3000);
+        setTimeout(() => (this.successMessage = ''), 3000);
       },
-      error: (error) => {
+      error: () => {
         this.isCreating = false;
-        console.error('Error creating cleaner:', error);
-        
-        if (error.error && error.error.message) {
-          this.errorMessage = error.error.message;
-        } else if (error.status === 400) {
-          this.errorMessage = 'Invalid data provided. Please check all fields.';
-        } else if (error.status === 409) {
-          this.errorMessage = 'Username or email already exists.';
-        } else {
-          this.errorMessage = 'Failed to create cleaner. Please try again.';
-        }
+        this.errorMessage = 'Failed to create cleaner. Please try again.';
       }
     });
-  }
-
-  approveCleaner(cleanerId: number) {
-    this.errorMessage = '';
-    this.successMessage = '';
-    
-    // Check if token is expired
-    if (!this.authService.refreshTokenIfNeeded()) {
-      this.errorMessage = 'Your session has expired. Please log in again.';
-      return;
-    }
-    
-    
-    this.http.put(`http://localhost:8080/api/cleaners/${cleanerId}/approve`, {}, { headers: this.getAuthHeaders() }).subscribe({
-      next: () => {
-        this.successMessage = 'Cleaner approved successfully!';
-        this.loadCleaners();
-        this.loadPendingCleaners();
-        
-        // Clear success message after 3 seconds
-        setTimeout(() => {
-          this.successMessage = '';
-        }, 3000);
-      },
-      error: (error) => {
-        console.error('Error approving cleaner:', error);
-        if (error.status === 401) {
-          this.errorMessage = 'Authentication failed. Your session may have expired or there was a server configuration change. Please log in again.';
-          this.authService.logout();
-        } else if (error.status === 403) {
-          this.errorMessage = 'You do not have permission to approve cleaners.';
-        } else if (error.status === 404) {
-          this.errorMessage = 'Cleaner not found.';
-        } else {
-          this.errorMessage = 'Failed to approve cleaner. Please try again.';
-        }
-      }
-    });
-  }
-
-  rejectCleaner(cleanerId: number) {
-    if (confirm('Are you sure you want to reject this cleaner application?')) {
-      this.errorMessage = '';
-      this.successMessage = '';
-      
-      // Check if token is expired
-      if (!this.authService.refreshTokenIfNeeded()) {
-        this.errorMessage = 'Your session has expired. Please log in again.';
-        return;
-      }
-      
-      this.http.put(`http://localhost:8080/api/cleaners/${cleanerId}/reject`, {}, { headers: this.getAuthHeaders() }).subscribe({
-        next: () => {
-          this.successMessage = 'Cleaner application rejected.';
-          this.loadCleaners();
-          this.loadPendingCleaners();
-          
-          // Clear success message after 3 seconds
-          setTimeout(() => {
-            this.successMessage = '';
-          }, 3000);
-        },
-        error: (error) => {
-          console.error('Error rejecting cleaner:', error);
-          if (error.status === 401) {
-            this.errorMessage = 'Authentication failed. Your session may have expired or there was a server configuration change. Please log in again.';
-            this.authService.logout();
-          } else if (error.status === 403) {
-            this.errorMessage = 'You do not have permission to reject cleaners.';
-          } else if (error.status === 404) {
-            this.errorMessage = 'Cleaner not found.';
-          } else {
-            this.errorMessage = 'Failed to reject cleaner. Please try again.';
-          }
-        }
-      });
-    }
   }
 
   closeCreateCleanerForm() {

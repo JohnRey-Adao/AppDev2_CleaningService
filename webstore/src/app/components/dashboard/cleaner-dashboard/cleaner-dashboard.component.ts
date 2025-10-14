@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Cleaner, Booking } from '../../../models/user.model';
 import { AuthService } from '../../../services/auth.service';
@@ -7,7 +8,7 @@ import { AuthService } from '../../../services/auth.service';
 @Component({
   selector: 'app-cleaner-dashboard',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, FormsModule],
   templateUrl: './cleaner-dashboard.component.html',
   styles: []
 })
@@ -21,6 +22,8 @@ export class CleanerDashboardComponent implements OnInit {
   jobsThisMonth = 0;
   earningsThisMonth = 0;
   activeTab = 'overview';
+  editingProfile = false;
+  private selectedPhotoFile: File | null = null;
 
   constructor(private http: HttpClient, private authService: AuthService) {}
 
@@ -78,7 +81,6 @@ export class CleanerDashboardComponent implements OnInit {
       .filter(b => b.status === 'COMPLETED')
       .reduce((sum, b) => sum + b.totalAmount, 0);
     
-    // Calculate monthly stats (simplified)
     const currentMonth = new Date().getMonth();
     const currentYear = new Date().getFullYear();
     const monthlyBookings = this.bookings.filter(b => {
@@ -94,48 +96,69 @@ export class CleanerDashboardComponent implements OnInit {
 
   confirmBooking(bookingId: number) {
     this.http.put(`http://localhost:8080/api/bookings/${bookingId}/confirm`, {}, { headers: this.getAuthHeaders() }).subscribe({
-      next: () => {
-        this.loadBookings();
-      },
-      error: (error) => {
-        console.error('Error confirming booking:', error);
-      }
+      next: () => { this.loadBookings(); },
+      error: (error) => { console.error('Error confirming booking:', error); }
     });
   }
 
   startBooking(bookingId: number) {
     this.http.put(`http://localhost:8080/api/bookings/${bookingId}/start`, {}, { headers: this.getAuthHeaders() }).subscribe({
-      next: () => {
-        this.loadBookings();
-      },
-      error: (error) => {
-        console.error('Error starting booking:', error);
-      }
+      next: () => { this.loadBookings(); },
+      error: (error) => { console.error('Error starting booking:', error); }
     });
   }
 
   completeBooking(bookingId: number) {
     this.http.put(`http://localhost:8080/api/bookings/${bookingId}/complete`, {}, { headers: this.getAuthHeaders() }).subscribe({
-      next: () => {
-        this.loadBookings();
-      },
-      error: (error) => {
-        console.error('Error completing booking:', error);
-      }
+      next: () => { this.loadBookings(); },
+      error: (error) => { console.error('Error completing booking:', error); }
     });
   }
 
   toggleStatus() {
     if (!this.cleaner) return;
-    
     const newStatus = this.cleaner.cleanerStatus === 'AVAILABLE' ? 'OFFLINE' : 'AVAILABLE';
     this.http.put(`http://localhost:8080/api/cleaners/${this.cleaner.id}/status?status=${newStatus}`, {}, { headers: this.getAuthHeaders() }).subscribe({
+      next: () => { this.loadCleanerData(); },
+      error: (error) => { console.error('Error updating status:', error); }
+    });
+  }
+
+  onPhotoSelected(event: Event) {
+    const input = event.target as HTMLInputElement;
+    if (input.files && input.files.length > 0) {
+      this.selectedPhotoFile = input.files[0];
+    }
+  }
+
+  saveCleanerProfile() {
+    if (!this.cleaner) return;
+    const id = this.cleaner.id;
+
+    // First update profile fields
+    this.http.put(`http://localhost:8080/api/profile/cleaner/${id}`, this.cleaner, { headers: this.getAuthHeaders() }).subscribe({
       next: () => {
-        this.loadCleanerData();
+        if (this.selectedPhotoFile) {
+          const token = this.authService.getToken();
+          const formData = new FormData();
+          formData.append('file', this.selectedPhotoFile);
+          this.http.post(`http://localhost:8080/api/profile/cleaner/${id}/photo`, formData, {
+            headers: new HttpHeaders({ 'Authorization': `Bearer ${token}` })
+          }).subscribe({
+            next: (url: any) => {
+              if (typeof url === 'string') {
+                this.cleaner!.profilePicture = url;
+              }
+              this.editingProfile = false;
+              this.selectedPhotoFile = null;
+            },
+            error: () => { this.editingProfile = false; }
+          });
+        } else {
+          this.editingProfile = false;
+        }
       },
-      error: (error) => {
-        console.error('Error updating status:', error);
-      }
+      error: () => { this.editingProfile = false; }
     });
   }
 

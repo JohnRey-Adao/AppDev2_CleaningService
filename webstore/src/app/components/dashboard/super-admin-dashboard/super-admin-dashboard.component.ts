@@ -15,7 +15,6 @@ import { AuthService } from '../../../services/auth.service';
 export class SuperAdminDashboardComponent implements OnInit {
   customers: Customer[] = [];
   cleaners: Cleaner[] = [];
-  pendingCleaners: Cleaner[] = [];
   admins: Admin[] = [];
   bookings: Booking[] = [];
   recentBookings: Booking[] = [];
@@ -40,11 +39,9 @@ export class SuperAdminDashboardComponent implements OnInit {
   errorMessage = '';
   successMessage = '';
 
-  // Cleaner management
+  // Cleaner creation (optional)
   showCreateCleanerForm = false;
-  showPendingCleaners = false;
-  pendingCleanersCount = 0;
-  
+
   newAdmin: AdminRegistrationRequest = {
     firstName: '',
     lastName: '',
@@ -55,6 +52,7 @@ export class SuperAdminDashboardComponent implements OnInit {
     adminLevel: 'ADMIN'
   };
 
+  // Cleaner creation form state
   newCleaner: CleanerRegistrationRequest = {
     firstName: '',
     lastName: '',
@@ -79,12 +77,10 @@ export class SuperAdminDashboardComponent implements OnInit {
     this.loadCleaners();
     this.loadAdmins();
     this.loadBookings();
-    this.loadPendingCleaners();
   }
 
   // Tab navigation methods
   setActiveTab(tabName: string) {
-    console.log('Switching to tab:', tabName);
     this.activeTab = tabName;
   }
 
@@ -104,11 +100,7 @@ export class SuperAdminDashboardComponent implements OnInit {
         this.customers = customers;
         this.totalCustomers = customers.length;
         this.activeCustomers = customers.filter(c => c.status === 'ACTIVE').length;
-        this.updateTotalUsers();
-      },
-      error: (error) => {
-        console.error('Error loading customers:', error);
-        this.errorMessage = 'Failed to load customers. Please try again.';
+        this.updateTotals();
       }
     });
   }
@@ -119,11 +111,7 @@ export class SuperAdminDashboardComponent implements OnInit {
         this.cleaners = cleaners;
         this.totalCleaners = cleaners.length;
         this.availableCleaners = cleaners.filter(c => c.cleanerStatus === 'AVAILABLE').length;
-        this.updateTotalUsers();
-      },
-      error: (error) => {
-        console.error('Error loading cleaners:', error);
-        this.errorMessage = 'Failed to load cleaners. Please try again.';
+        this.updateTotals();
       }
     });
   }
@@ -133,11 +121,7 @@ export class SuperAdminDashboardComponent implements OnInit {
       next: (admins) => {
         this.admins = admins;
         this.totalAdmins = admins.length;
-        this.updateTotalUsers();
-      },
-      error: (error) => {
-        console.error('Error loading admins:', error);
-        this.errorMessage = 'Failed to load admins. Please try again.';
+        this.updateTotals();
       }
     });
   }
@@ -148,16 +132,12 @@ export class SuperAdminDashboardComponent implements OnInit {
         this.bookings = bookings;
         this.recentBookings = bookings.slice(0, 10);
         this.calculateStats();
-      },
-      error: (error) => {
-        console.error('Error loading bookings:', error);
-        this.errorMessage = 'Failed to load bookings. Please try again.';
       }
     });
   }
 
-  // Statistics calculation
-  updateTotalUsers() {
+  // Totals and stats
+  updateTotals() {
     this.totalUsers = this.totalCustomers + this.totalCleaners + this.totalAdmins;
   }
 
@@ -165,260 +145,80 @@ export class SuperAdminDashboardComponent implements OnInit {
     this.totalBookings = this.bookings.length;
     this.completedBookings = this.bookings.filter(b => b.status === 'COMPLETED').length;
     this.pendingBookings = this.bookings.filter(b => b.status === 'PENDING').length;
-    this.totalRevenue = this.bookings
-      .filter(b => b.status === 'COMPLETED')
-      .reduce((sum, b) => sum + b.totalAmount, 0);
+    this.totalRevenue = this.bookings.filter(b => b.status === 'COMPLETED').reduce((s, b) => s + b.totalAmount, 0);
   }
 
-  // Admin management methods
-  createAdmin() {
-    this.isCreating = true;
-    this.errorMessage = '';
-    this.successMessage = '';
+  // Helpers used by template
+  formatDate(dateString: string): string { return new Date(dateString).toLocaleDateString(); }
+  getStatusClass(status: string): string { switch (status) { case 'PENDING': return 'bg-warning'; case 'CONFIRMED': return 'bg-info'; case 'IN_PROGRESS': return 'bg-primary'; case 'COMPLETED': return 'bg-success'; case 'CANCELLED': return 'bg-danger'; case 'AVAILABLE': return 'bg-success'; case 'BUSY': return 'bg-warning'; case 'OFFLINE': return 'bg-secondary'; case 'ON_BREAK': return 'bg-info'; case 'ACTIVE': return 'bg-success'; case 'INACTIVE': return 'bg-secondary'; default: return 'bg-secondary'; } }
+  getCurrentDate(): string { return new Date().toLocaleDateString(); }
 
-    // Transform the form data to match the backend Admin entity structure
-    const adminData = {
-      username: this.newAdmin.username,
-      email: this.newAdmin.email,
-      password: this.newAdmin.password,
-      firstName: this.newAdmin.firstName,
-      lastName: this.newAdmin.lastName,
-      phoneNumber: this.newAdmin.phoneNumber || null,
-      adminLevel: this.newAdmin.adminLevel
-    };
-
-    this.http.post('http://localhost:8080/api/admins/create', adminData, { headers: this.getAuthHeaders() }).subscribe({
-      next: (response) => {
-        this.isCreating = false;
-        this.successMessage = 'Admin created successfully!';
-        this.loadAdmins();
-        this.closeCreateAdminForm();
-        this.resetNewAdminForm();
-        
-        // Clear success message after 3 seconds
-        setTimeout(() => {
-          this.successMessage = '';
-        }, 3000);
-      },
-      error: (error) => {
-        this.isCreating = false;
-        console.error('Error creating admin:', error);
-        
-        if (error.error && error.error.message) {
-          this.errorMessage = error.error.message;
-        } else if (error.status === 400) {
-          this.errorMessage = 'Invalid data provided. Please check all fields.';
-        } else if (error.status === 409) {
-          this.errorMessage = 'Username or email already exists.';
-        } else if (error.status === 403) {
-          this.errorMessage = 'You do not have permission to create admins.';
-        } else {
-          this.errorMessage = 'Failed to create admin. Please try again.';
-        }
-      }
+  // Cleaner actions
+  viewCleaner(cleanerId: number) {
+    this.http.get<Cleaner>(`http://localhost:8080/api/cleaners/${cleanerId}`, { headers: this.getAuthHeaders() }).subscribe({
+      next: (cleaner) => alert(`${cleaner.firstName} ${cleaner.lastName}\nEmail: ${cleaner.email}\nRate: ₱${cleaner.hourlyRate}/hr\nStatus: ${cleaner.cleanerStatus}`)
     });
   }
 
-  deleteAdmin(adminId: number) {
-    if (confirm('Are you sure you want to delete this admin? This action cannot be undone.')) {
-      this.http.delete(`http://localhost:8080/api/admins/${adminId}`, { headers: this.getAuthHeaders() }).subscribe({
-        next: () => {
-          this.successMessage = 'Admin deleted successfully!';
-          this.loadAdmins();
-          
-          // Clear success message after 3 seconds
-          setTimeout(() => {
-            this.successMessage = '';
-          }, 3000);
-        },
-        error: (error) => {
-          console.error('Error deleting admin:', error);
-          
-          if (error.status === 403) {
-            this.errorMessage = 'You do not have permission to delete this admin.';
-          } else if (error.status === 404) {
-            this.errorMessage = 'Admin not found.';
-          } else {
-            this.errorMessage = 'Failed to delete admin. Please try again.';
-          }
-        }
-      });
-    }
-  }
-
-  closeCreateAdminForm() {
-    this.showCreateAdminForm = false;
-    this.errorMessage = '';
-    this.successMessage = '';
-    this.resetNewAdminForm();
-  }
-
-  resetNewAdminForm() {
-    this.newAdmin = {
-      firstName: '',
-      lastName: '',
-      email: '',
-      username: '',
-      password: '',
-      phoneNumber: '',
-      adminLevel: 'ADMIN'
-    };
-  }
-
-  // Utility methods
-  formatDate(dateString: string): string {
-    return new Date(dateString).toLocaleDateString();
-  }
-
-  getCurrentDate(): string {
-    return new Date().toLocaleDateString();
-  }
-
-  getStatusClass(status: string): string {
-    switch (status) {
-      case 'PENDING': return 'bg-warning';
-      case 'CONFIRMED': return 'bg-info';
-      case 'IN_PROGRESS': return 'bg-primary';
-      case 'COMPLETED': return 'bg-success';
-      case 'CANCELLED': return 'bg-danger';
-      case 'AVAILABLE': return 'bg-success';
-      case 'BUSY': return 'bg-warning';
-      case 'OFFLINE': return 'bg-secondary';
-      case 'ON_BREAK': return 'bg-info';
-      case 'PENDING_APPROVAL': return 'bg-warning';
-      case 'REJECTED': return 'bg-danger';
-      case 'ACTIVE': return 'bg-success';
-      case 'INACTIVE': return 'bg-secondary';
-      default: return 'bg-secondary';
-    }
-  }
-
-  // Cleaner management methods
-  loadPendingCleaners() {
-    this.http.get<Cleaner[]>('http://localhost:8080/api/cleaners/pending-approval', { headers: this.getAuthHeaders() }).subscribe({
-      next: (cleaners) => {
-        this.pendingCleaners = cleaners;
-        this.pendingCleanersCount = cleaners.length;
-        // Automatically show pending cleaners section if there are any
-        if (cleaners.length > 0) {
-          this.showPendingCleaners = true;
-        }
-      },
-      error: (error) => {
-        console.error('Error loading pending cleaners:', error);
-      }
+  editCleanerRate(cleaner: Cleaner) {
+    const input = prompt('Enter new hourly rate (₱):', String(cleaner.hourlyRate));
+    if (input === null) return;
+    const newRate = Number(input);
+    if (isNaN(newRate) || newRate < 0) return alert('Invalid rate');
+    this.http.put(`http://localhost:8080/api/cleaners/${cleaner.id}/rate?hourlyRate=${newRate}`, {}, { headers: this.getAuthHeaders() }).subscribe({
+      next: () => { this.successMessage = 'Cleaner updated'; this.loadCleaners(); }
     });
   }
 
+  deleteCleaner(cleanerId: number) {
+    if (!confirm('Delete this cleaner?')) return;
+    this.http.delete(`http://localhost:8080/api/cleaners/${cleanerId}`, { headers: this.getAuthHeaders() }).subscribe({
+      next: () => { this.successMessage = 'Cleaner deleted'; this.loadCleaners(); }
+    });
+  }
+
+  // Customer actions
+  viewCustomer(customerId: number) {
+    this.http.get<Customer>(`http://localhost:8080/api/customers/${customerId}`, { headers: this.getAuthHeaders() }).subscribe({
+      next: (customer) => alert(`${customer.firstName} ${customer.lastName}\nEmail: ${customer.email}\nPhone: ${customer.phoneNumber || 'N/A'}\nAddress: ${customer.address}`)
+    });
+  }
+
+  editCustomer(customer: Customer) {
+    const newPhone = prompt('Update phone number:', customer.phoneNumber || '');
+    if (newPhone === null) return;
+    const updated: Customer = { ...customer, phoneNumber: newPhone } as Customer;
+    this.http.put(`http://localhost:8080/api/customers/${customer.id}`, updated, { headers: this.getAuthHeaders() }).subscribe({
+      next: () => { this.successMessage = 'Customer updated'; this.loadCustomers(); }
+    });
+  }
+
+  deleteCustomer(customerId: number) {
+    if (!confirm('Delete this customer?')) return;
+    this.http.delete(`http://localhost:8080/api/customers/${customerId}`, { headers: this.getAuthHeaders() }).subscribe({
+      next: () => { this.successMessage = 'Customer deleted'; this.loadCustomers(); }
+    });
+  }
+
+  // Cleaner creation (modal)
   createCleaner() {
     this.isCreating = true;
     this.errorMessage = '';
     this.successMessage = '';
-
     this.http.post('http://localhost:8080/api/cleaners/register', this.newCleaner, { headers: this.getAuthHeaders() }).subscribe({
-      next: (response) => {
+      next: () => {
         this.isCreating = false;
         this.successMessage = 'Cleaner created successfully!';
         this.loadCleaners();
         this.closeCreateCleanerForm();
         this.resetNewCleanerForm();
-        
-        // Clear success message after 3 seconds
-        setTimeout(() => {
-          this.successMessage = '';
-        }, 3000);
+        setTimeout(() => (this.successMessage = ''), 3000);
       },
-      error: (error) => {
+      error: () => {
         this.isCreating = false;
-        console.error('Error creating cleaner:', error);
-        
-        if (error.error && error.error.message) {
-          this.errorMessage = error.error.message;
-        } else if (error.status === 400) {
-          this.errorMessage = 'Invalid data provided. Please check all fields.';
-        } else if (error.status === 409) {
-          this.errorMessage = 'Username or email already exists.';
-        } else {
-          this.errorMessage = 'Failed to create cleaner. Please try again.';
-        }
+        this.errorMessage = 'Failed to create cleaner.';
       }
     });
-  }
-
-  approveCleaner(cleanerId: number) {
-    this.errorMessage = '';
-    this.successMessage = '';
-    
-    // Check if token is expired
-    if (!this.authService.refreshTokenIfNeeded()) {
-      this.errorMessage = 'Your session has expired. Please log in again.';
-      return;
-    }
-    
-    this.http.put(`http://localhost:8080/api/cleaners/${cleanerId}/approve`, {}, { headers: this.getAuthHeaders() }).subscribe({
-      next: () => {
-        this.successMessage = 'Cleaner approved successfully!';
-        this.loadCleaners();
-        this.loadPendingCleaners();
-        
-        // Clear success message after 3 seconds
-        setTimeout(() => {
-          this.successMessage = '';
-        }, 3000);
-      },
-      error: (error) => {
-        console.error('Error approving cleaner:', error);
-        if (error.status === 401) {
-          this.errorMessage = 'Authentication failed. Your session may have expired or there was a server configuration change. Please log in again.';
-          this.authService.logout();
-        } else if (error.status === 403) {
-          this.errorMessage = 'You do not have permission to approve cleaners.';
-        } else if (error.status === 404) {
-          this.errorMessage = 'Cleaner not found.';
-        } else {
-          this.errorMessage = 'Failed to approve cleaner. Please try again.';
-        }
-      }
-    });
-  }
-
-  rejectCleaner(cleanerId: number) {
-    if (confirm('Are you sure you want to reject this cleaner application?')) {
-      this.errorMessage = '';
-      this.successMessage = '';
-      
-      // Check if token is expired
-      if (!this.authService.refreshTokenIfNeeded()) {
-        this.errorMessage = 'Your session has expired. Please log in again.';
-        return;
-      }
-      
-      this.http.put(`http://localhost:8080/api/cleaners/${cleanerId}/reject`, {}, { headers: this.getAuthHeaders() }).subscribe({
-        next: () => {
-          this.successMessage = 'Cleaner application rejected.';
-          this.loadCleaners();
-          this.loadPendingCleaners();
-          
-          // Clear success message after 3 seconds
-          setTimeout(() => {
-            this.successMessage = '';
-          }, 3000);
-        },
-        error: (error) => {
-          console.error('Error rejecting cleaner:', error);
-          if (error.status === 401) {
-            this.errorMessage = 'Authentication failed. Your session may have expired or there was a server configuration change. Please log in again.';
-            this.authService.logout();
-          } else if (error.status === 403) {
-            this.errorMessage = 'You do not have permission to reject cleaners.';
-          } else if (error.status === 404) {
-            this.errorMessage = 'Cleaner not found.';
-          } else {
-            this.errorMessage = 'Failed to reject cleaner. Please try again.';
-          }
-        }
-      });
-    }
   }
 
   closeCreateCleanerForm() {
@@ -430,20 +230,57 @@ export class SuperAdminDashboardComponent implements OnInit {
 
   resetNewCleanerForm() {
     this.newCleaner = {
-      firstName: '',
-      lastName: '',
-      email: '',
-      username: '',
-      password: '',
-      phoneNumber: '',
-      address: '',
-      city: '',
-      region: '',
-      postalCode: '',
-      country: '',
-      hourlyRate: 0,
-      bio: '',
-      profilePicture: ''
+      firstName: '', lastName: '', email: '', username: '', password: '', phoneNumber: '', address: '', city: '', region: '', postalCode: '', country: '', hourlyRate: 0, bio: '', profilePicture: ''
     };
+  }
+
+  // Admin management methods
+  createAdmin() {
+    this.isCreating = true;
+    this.errorMessage = '';
+    this.successMessage = '';
+
+    const adminData = {
+      username: this.newAdmin.username,
+      email: this.newAdmin.email,
+      password: this.newAdmin.password,
+      firstName: this.newAdmin.firstName,
+      lastName: this.newAdmin.lastName,
+      phoneNumber: this.newAdmin.phoneNumber || null,
+      adminLevel: this.newAdmin.adminLevel
+    };
+
+    this.http.post('http://localhost:8080/api/admins/create', adminData, { headers: this.getAuthHeaders() }).subscribe({
+      next: () => {
+        this.isCreating = false;
+        this.successMessage = 'Admin created successfully!';
+        this.loadAdmins();
+        this.closeCreateAdminForm();
+        this.resetNewAdminForm();
+        setTimeout(() => (this.successMessage = ''), 3000);
+      },
+      error: () => {
+        this.isCreating = false;
+        this.errorMessage = 'Failed to create admin.';
+      }
+    });
+  }
+
+  deleteAdmin(adminId: number) {
+    if (!confirm('Delete this admin?')) return;
+    this.http.delete(`http://localhost:8080/api/admins/${adminId}`, { headers: this.getAuthHeaders() }).subscribe({
+      next: () => { this.successMessage = 'Admin deleted'; this.loadAdmins(); }
+    });
+  }
+
+  closeCreateAdminForm() {
+    this.showCreateAdminForm = false;
+    this.errorMessage = '';
+    this.successMessage = '';
+    this.resetNewAdminForm();
+  }
+
+  resetNewAdminForm() {
+    this.newAdmin = { firstName: '', lastName: '', email: '', username: '', password: '', phoneNumber: '', adminLevel: 'ADMIN' };
   }
 }

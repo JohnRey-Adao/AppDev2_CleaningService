@@ -72,6 +72,7 @@ public class WebSecurityConfig {
                     .requestMatchers("/customers/register").permitAll()
                     .requestMatchers("/api/cleaners/register").permitAll()
                     .requestMatchers("/cleaners/register").permitAll()
+                    .requestMatchers("/api/uploads/**").permitAll()
                     .anyRequest().authenticated()
             );
 
