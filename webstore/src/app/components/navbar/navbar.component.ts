@@ -10,8 +10,11 @@ import { AuthService } from '../../services/auth.service';
   template: `
     <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
       <div class="container">
-        <a class="navbar-brand" routerLink="/">
-          <i class="fas fa-broom me-2"></i>Cleaning Service
+        <a class="navbar-brand d-flex align-items-center" routerLink="/">
+          <img src="assets/images/Logo_CleaningService.png" alt="Cleaning Service" height="40" class="me-2" 
+               onerror="this.style.display='none'; this.nextElementSibling.style.display='inline';">
+          <span class="logo-text" style="display: none;">🧹</span>
+          Cleaning Service
         </a>
         
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
@@ -36,8 +39,13 @@ import { AuthService } from '../../services/auth.service';
           
           <ul class="navbar-nav" *ngIf="authService.isLoggedIn()">
             <li class="nav-item dropdown">
-              <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
-                <i class="fas fa-user me-1"></i>{{ getCurrentUser()?.username }}
+              <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" role="button" data-bs-toggle="dropdown">
+                <img [src]="getProfilePicture()" [alt]="getCurrentUser()?.username" 
+                     class="rounded-circle me-2" width="32" height="32" 
+                     style="object-fit: cover;"
+                     (error)="onImageError($event)"
+                     (load)="onImageLoad($event)">
+                {{ getCurrentUser()?.username }}
               </a>
               <ul class="dropdown-menu">
                 <li *ngIf="authService.hasRole('ROLE_CUSTOMER')">
@@ -80,6 +88,23 @@ export class NavbarComponent {
 
   getCurrentUser() {
     return this.authService.getCurrentUser();
+  }
+
+  getProfilePicture(): string {
+    const user = this.getCurrentUser();
+    if (user?.profilePicture) {
+      return user.profilePicture;
+    }
+    return 'assets/images/default-cleaner.jpg';
+  }
+
+  onImageError(event: any) {
+    console.log('Profile picture failed to load, using default');
+    event.target.src = 'assets/images/default-cleaner.jpg';
+  }
+
+  onImageLoad(event: any) {
+    console.log('Profile picture loaded successfully');
   }
 
   logout() {

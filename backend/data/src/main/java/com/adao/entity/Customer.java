@@ -29,6 +29,12 @@ public class Customer extends User {
     @Size(max = 100)
     private String country = "Philippines";
     
+    @Size(max = 1000)
+    private String bio;
+    
+    @Size(max = 500)
+    private String profilePicture;
+    
     @OneToMany(mappedBy = "customer", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @JsonIgnore
     private List<Booking> bookings = new ArrayList<>();
@@ -82,6 +88,22 @@ public class Customer extends User {
     
     public void setCountry(String country) {
         this.country = country;
+    }
+    
+    public String getBio() {
+        return bio;
+    }
+    
+    public void setBio(String bio) {
+        this.bio = bio;
+    }
+    
+    public String getProfilePicture() {
+        return profilePicture;
+    }
+    
+    public void setProfilePicture(String profilePicture) {
+        this.profilePicture = profilePicture;
     }
     
     public List<Booking> getBookings() {

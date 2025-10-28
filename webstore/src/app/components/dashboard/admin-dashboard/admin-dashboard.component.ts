@@ -275,4 +275,12 @@ export class AdminDashboardComponent implements OnInit {
       profilePicture: ''
     };
   }
+
+  getCleanerImage(cleaner: Cleaner): string {
+    if (cleaner.profilePicture) {
+      // If it's already a full URL, return as is, otherwise prepend backend URL
+      return cleaner.profilePicture.startsWith('http') ? cleaner.profilePicture : `http://localhost:8080${cleaner.profilePicture}`;
+    }
+    return 'assets/images/default-cleaner.svg';
+  }
 }

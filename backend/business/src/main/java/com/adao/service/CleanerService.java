@@ -23,6 +23,9 @@ public class CleanerService {
     
     @Autowired
     private UserService userService;
+
+    @Autowired
+    private com.adao.repository.BookingRepository bookingRepository;
     
     public List<Cleaner> getAllCleaners() {
         return cleanerRepository.findAll();
@@ -72,7 +75,11 @@ public class CleanerService {
     }
     
     public void deleteCleaner(Long id) {
-        cleanerRepository.deleteById(id);
+        Cleaner cleaner = cleanerRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Cleaner not found"));
+        // Remove bookings first to avoid FK constraints
+        bookingRepository.deleteByCleaner(cleaner);
+        cleanerRepository.delete(cleaner);
     }
     
     public Cleaner updateCleanerStatus(Long cleanerId, CleanerStatus status) {
@@ -80,12 +87,8 @@ public class CleanerService {
                 .orElseThrow(() -> new RuntimeException("Cleaner not found"));
         
         cleaner.setCleanerStatus(status);
-        // Toggle login ability based on approval
-        if (status == CleanerStatus.AVAILABLE || status == CleanerStatus.BUSY || status == CleanerStatus.OFFLINE || status == CleanerStatus.ON_BREAK) {
-            cleaner.setStatus(UserStatus.ACTIVE);
-        } else if (status == CleanerStatus.PENDING_APPROVAL || status == CleanerStatus.REJECTED) {
-            cleaner.setStatus(UserStatus.INACTIVE);
-        }
+        // All cleaner statuses allow login
+        cleaner.setStatus(UserStatus.ACTIVE);
         return cleanerRepository.save(cleaner);
     }
     
@@ -95,5 +98,16 @@ public class CleanerService {
         
         cleaner.setHourlyRate(hourlyRate);
         return cleanerRepository.save(cleaner);
+    }
+    
+    public List<Cleaner> migratePendingToAvailable() {
+        List<Cleaner> pendingCleaners = cleanerRepository.findByCleanerStatus(CleanerStatus.PENDING_APPROVAL);
+        
+        for (Cleaner cleaner : pendingCleaners) {
+            cleaner.setCleanerStatus(CleanerStatus.AVAILABLE);
+            cleaner.setStatus(UserStatus.ACTIVE);
+        }
+        
+        return cleanerRepository.saveAll(pendingCleaners);
     }
 }

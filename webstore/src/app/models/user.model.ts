@@ -23,6 +23,8 @@ export interface Customer extends User {
   postalCode?: string;
   region?: string;
   country: string;
+  bio?: string;
+  profilePicture?: string;
 }
 
 export interface Cleaner extends User {
@@ -67,6 +69,7 @@ export interface JwtResponse {
   username: string;
   email: string;
   roles: string[];
+  profilePicture?: string;
 }
 
 export interface CustomerRegistrationRequest {

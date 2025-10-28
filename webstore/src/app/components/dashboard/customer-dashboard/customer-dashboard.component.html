@@ -1,8 +1,20 @@
 <div class="dashboard-container">
-  <div class="row mb-4">
+  <!-- Header Section -->
+  <div class="row mb-5">
     <div class="col-12">
-      <h2><i class="fas fa-home me-2"></i>Customer Dashboard</h2>
-      <hr>
+      <div class="d-flex align-items-center justify-content-between">
+        <div>
+          <h1 class="display-6 fw-bold text-primary mb-2">
+            <i class="fas fa-home me-3"></i>Customer Dashboard
+          </h1>
+          <p class="text-secondary mb-0">Manage your bookings and find professional cleaners</p>
+        </div>
+        <div class="text-end">
+          <div class="badge bg-primary fs-6 px-3 py-2">
+            <i class="fas fa-user me-2"></i>Customer Account
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -37,18 +49,53 @@
   <div class="tab-content">
     <!-- Overview Tab -->
     <div class="tab-pane" [class.active]="activeTab==='overview'">
-      <div class="row mb-4">
-        <div class="col-md-3" *ngFor="let card of [
-          {icon:'calendar-check', title:'Total Bookings', value: totalBookings, cls:'text-primary'},
-          {icon:'clock', title:'Pending', value: pendingBookings, cls:'text-warning'},
-          {icon:'check-circle', title:'Completed', value: completedBookings, cls:'text-success'},
-          {icon:'dollar-sign', title:'Total Spent', value: (totalSpent | currency), cls:'text-info'}
+      <div class="row g-4 mb-5">
+        <div class="col-lg-3 col-md-6" *ngFor="let card of [
+          {icon:'calendar-check', title:'Total Bookings', value: totalBookings, cls:'text-primary', bg:'bg-primary'},
+          {icon:'clock', title:'Pending', value: pendingBookings, cls:'text-warning', bg:'bg-warning'},
+          {icon:'check-circle', title:'Completed', value: completedBookings, cls:'text-success', bg:'bg-success'},
+          {icon:'dollar-sign', title:'Total Spent', value: (totalSpent | currency), cls:'text-info', bg:'bg-info'}
         ]; let i = index">
-          <div class="card text-center">
+          <div class="card dashboard-card h-100">
+            <div class="card-body text-center p-4">
+              <div class="mb-3">
+                <div class="rounded-circle d-inline-flex align-items-center justify-content-center {{card.bg}} text-white" 
+                     style="width: 60px; height: 60px;">
+                  <i class="fas fa-{{card.icon}} fa-lg"></i>
+                </div>
+              </div>
+              <h6 class="card-title fw-bold text-secondary mb-2">{{ card.title }}</h6>
+              <h3 class="fw-bold {{card.cls}} mb-0">{{ card.value }}</h3>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Quick Actions -->
+      <div class="row">
+        <div class="col-12">
+          <div class="card">
+            <div class="card-header">
+              <h5 class="mb-0"><i class="fas fa-bolt me-2"></i>Quick Actions</h5>
+            </div>
             <div class="card-body">
-              <i class="fas fa-{{card.icon}} fa-2x {{card.cls}} mb-2"></i>
-              <h5 class="card-title">{{ card.title }}</h5>
-              <h3 [ngClass]="card.cls">{{ card.value }}</h3>
+              <div class="row g-3">
+                <div class="col-md-4">
+                  <button class="btn btn-primary w-100 py-3" (click)="setActiveTab('cleaners')">
+                    <i class="fas fa-search me-2"></i>Find Cleaners
+                  </button>
+                </div>
+                <div class="col-md-4">
+                  <button class="btn btn-outline-primary w-100 py-3" (click)="setActiveTab('bookings')">
+                    <i class="fas fa-list me-2"></i>View Bookings
+                  </button>
+                </div>
+                <div class="col-md-4">
+                  <button class="btn btn-outline-secondary w-100 py-3" (click)="setActiveTab('profile')">
+                    <i class="fas fa-user me-2"></i>Update Profile
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -208,8 +255,9 @@
       <div class="row">
         <div class="col-md-6">
           <div class="card">
-            <div class="card-header">
+            <div class="card-header d-flex justify-content-between align-items-center">
               <h5><i class="fas fa-user me-2"></i>My Profile</h5>
+              <img [src]="customer ? getCustomerImage(customer) : 'assets/images/default-user.svg'" [alt]="(customer?.firstName || 'Customer') + ' ' + (customer?.lastName || '')" class="rounded-circle" style="width:48px;height:48px;object-fit:cover;">
             </div>
             <div class="card-body">
               <p><strong>Name:</strong> {{ customer?.firstName }} {{ customer?.lastName }}</p>
@@ -217,6 +265,7 @@
               <p><strong>Phone:</strong> {{ customer?.phoneNumber || 'Not provided' }}</p>
               <p><strong>Address:</strong> {{ customer?.address }}</p>
               <p><strong>City:</strong> {{ customer?.city || 'Not provided' }}</p>
+              <p><strong>Bio:</strong> {{ customer?.bio || 'No bio provided' }}</p>
               <button class="btn btn-outline-primary btn-sm" (click)="editingProfile = true">Edit Profile</button>
             </div>
           </div>
@@ -265,6 +314,14 @@
                     <label class="form-label">Country</label>
                     <input class="form-control" [(ngModel)]="customer.country" name="country">
                   </div>
+                </div>
+                <div class="mb-3">
+                  <label class="form-label">Bio</label>
+                  <textarea class="form-control" [(ngModel)]="customer.bio" name="bio" rows="3" placeholder="Tell us about yourself..."></textarea>
+                </div>
+                <div class="mb-3">
+                  <label class="form-label">Profile Picture</label>
+                  <input type="file" class="form-control" (change)="onPhotoSelected($event)" accept="image/*">
                 </div>
                 <div class="d-flex gap-2">
                   <button class="btn btn-primary" type="submit">Save</button>

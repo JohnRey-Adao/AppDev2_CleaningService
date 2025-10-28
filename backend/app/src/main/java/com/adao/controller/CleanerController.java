@@ -55,8 +55,8 @@ public class CleanerController {
             cleaner.setHourlyRate(request.getHourlyRate());
             cleaner.setBio(request.getBio());
             cleaner.setProfilePicture(request.getProfilePicture());
-            cleaner.setCleanerStatus(CleanerStatus.PENDING_APPROVAL); // Set to pending approval
-            cleaner.setStatus(UserStatus.INACTIVE); // Disable login until approved
+            cleaner.setCleanerStatus(CleanerStatus.AVAILABLE); // Set to available immediately
+            cleaner.setStatus(UserStatus.ACTIVE); // Enable login immediately
 
             Cleaner savedCleaner = cleanerService.createCleaner(cleaner);
             return ResponseEntity.ok(savedCleaner);
@@ -158,32 +158,18 @@ public class CleanerController {
         return ResponseEntity.ok(cleaners);
     }
 
-    @GetMapping("/pending-approval")
+    @PutMapping("/migrate-pending-to-available")
     @PreAuthorize("hasRole('ADMIN') or hasRole('SUPER_ADMIN')")
-    public ResponseEntity<List<Cleaner>> getPendingApprovalCleaners() {
-        List<Cleaner> cleaners = cleanerService.getCleanersByStatus(CleanerStatus.PENDING_APPROVAL);
-        return ResponseEntity.ok(cleaners);
-    }
-
-    @PutMapping("/{id}/approve")
-    @PreAuthorize("hasRole('ADMIN') or hasRole('SUPER_ADMIN')")
-    public ResponseEntity<?> approveCleaner(@PathVariable("id") Long id) {
+    public ResponseEntity<?> migratePendingToAvailable() {
         try {
-            Cleaner updatedCleaner = cleanerService.updateCleanerStatus(id, CleanerStatus.AVAILABLE);
-            return ResponseEntity.ok(updatedCleaner);
+            List<Cleaner> updatedCleaners = cleanerService.migratePendingToAvailable();
+            return ResponseEntity.ok(java.util.Map.of(
+                "message", "Successfully migrated " + updatedCleaners.size() + " cleaners from PENDING_APPROVAL to AVAILABLE",
+                "updatedCleaners", updatedCleaners.size()
+            ));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body("Error: " + e.getMessage());
         }
     }
 
-    @PutMapping("/{id}/reject")
-    @PreAuthorize("hasRole('ADMIN') or hasRole('SUPER_ADMIN')")
-    public ResponseEntity<?> rejectCleaner(@PathVariable("id") Long id) {
-        try {
-            Cleaner updatedCleaner = cleanerService.updateCleanerStatus(id, CleanerStatus.REJECTED);
-            return ResponseEntity.ok(updatedCleaner);
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body("Error: " + e.getMessage());
-        }
-    }
 }

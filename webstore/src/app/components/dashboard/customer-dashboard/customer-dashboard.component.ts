@@ -60,6 +60,7 @@ export class CustomerDashboardComponent implements OnInit {
   selectedDate = '';
   isFiltering = false;
   editingProfile = false;
+  private selectedPhotoFile: File | null = null;
 
   constructor(private http: HttpClient, private authService: AuthService) {}
 
@@ -105,13 +106,49 @@ export class CustomerDashboardComponent implements OnInit {
     }
   }
 
+  onPhotoSelected(event: Event) {
+    const input = event.target as HTMLInputElement;
+    if (input.files && input.files.length > 0) {
+      this.selectedPhotoFile = input.files[0];
+    }
+  }
+
   saveCustomerProfile() {
     if (!this.customer) return;
-    this.http.put(`http://localhost:8080/api/profile/customer/${this.customer.id}`, this.customer, { headers: this.getAuthHeaders() }).subscribe({
+    const id = this.customer.id;
+
+    // First update profile fields
+    this.http.put(`http://localhost:8080/api/profile/customer/${id}`, this.customer, { headers: this.getAuthHeaders() }).subscribe({
       next: () => {
-        this.successMessage = 'Profile updated successfully';
-        this.editingProfile = false;
-        setTimeout(() => this.successMessage = '', 2500);
+        if (this.selectedPhotoFile) {
+          const token = this.authService.getToken();
+          const formData = new FormData();
+          formData.append('file', this.selectedPhotoFile);
+          this.http.post(`http://localhost:8080/api/profile/customer/${id}/photo`, formData, {
+            headers: new HttpHeaders({ 'Authorization': `Bearer ${token}` }),
+            responseType: 'text' as 'json'
+          }).subscribe({
+            next: (url: any) => {
+              const returnedUrl = typeof url === 'string' ? url : (url?.toString?.() ?? '');
+              if (returnedUrl) {
+                this.customer!.profilePicture = returnedUrl;
+              }
+              this.successMessage = 'Profile updated successfully';
+              this.editingProfile = false;
+              this.selectedPhotoFile = null;
+              setTimeout(() => this.successMessage = '', 2500);
+            },
+            error: () => {
+              this.errorMessage = 'Profile updated but photo upload failed';
+              this.editingProfile = false;
+              setTimeout(() => this.errorMessage = '', 3000);
+            }
+          });
+        } else {
+          this.successMessage = 'Profile updated successfully';
+          this.editingProfile = false;
+          setTimeout(() => this.successMessage = '', 2500);
+        }
       },
       error: () => {
         this.errorMessage = 'Failed to update profile';
@@ -316,7 +353,11 @@ export class CustomerDashboardComponent implements OnInit {
   }
 
   getCleanerImage(cleaner: Cleaner): string {
-    return cleaner.profilePicture || 'assets/images/default-cleaner.svg';
+    if (cleaner.profilePicture) {
+      // If it's already a full URL, return as is, otherwise prepend backend URL
+      return cleaner.profilePicture.startsWith('http') ? cleaner.profilePicture : `http://localhost:8080${cleaner.profilePicture}`;
+    }
+    return 'assets/images/default-cleaner.svg';
   }
 
   getAuthHeaders(): HttpHeaders {
@@ -329,6 +370,13 @@ export class CustomerDashboardComponent implements OnInit {
 
   formatDate(dateString: string): string {
     return new Date(dateString).toLocaleDateString();
+  }
+
+  getCustomerImage(customer: Customer | null): string {
+    if (!customer || !customer.profilePicture) {
+      return 'assets/images/default-user.svg';
+    }
+    return customer.profilePicture.startsWith('http') ? customer.profilePicture : `http://localhost:8080${customer.profilePicture}`;
   }
 
   getStatusClass(status: string): string {

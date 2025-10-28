@@ -16,7 +16,12 @@ public class StaticResourceConfig implements WebMvcConfigurer {
         Path uploadDir = Paths.get("uploads");
         String uploadPath = uploadDir.toFile().getAbsolutePath();
 
+        // Since the application has context-path: /api, we need to handle both /api/uploads/** and /uploads/**
         registry.addResourceHandler("/uploads/**")
+                .addResourceLocations("file:" + uploadPath + "/");
+        
+        // Also handle direct access without /api prefix for flexibility
+        registry.addResourceHandler("/api/uploads/**")
                 .addResourceLocations("file:" + uploadPath + "/");
     }
 }

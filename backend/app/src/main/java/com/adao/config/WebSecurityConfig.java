@@ -72,6 +72,8 @@ public class WebSecurityConfig {
                     .requestMatchers("/customers/register").permitAll()
                     .requestMatchers("/api/cleaners/register").permitAll()
                     .requestMatchers("/cleaners/register").permitAll()
+                    // Important: matchers are evaluated WITHOUT the context-path. Permit both patterns.
+                    .requestMatchers("/uploads/**").permitAll()
                     .requestMatchers("/api/uploads/**").permitAll()
                     .anyRequest().authenticated()
             );

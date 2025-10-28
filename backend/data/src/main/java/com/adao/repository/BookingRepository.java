@@ -34,4 +34,7 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
     List<Booking> findCleanerBookingsOnDay(@Param("cleaner") Cleaner cleaner,
                                            @Param("startOfDay") LocalDateTime startOfDay,
                                            @Param("endOfDay") LocalDateTime endOfDay);
+
+    // Hard delete all bookings for a specific cleaner (used when deleting a cleaner)
+    void deleteByCleaner(Cleaner cleaner);
 }

@@ -38,6 +38,8 @@ export class CleanerDashboardComponent implements OnInit {
 
   private getAuthHeaders(): HttpHeaders {
     const token = this.authService.getToken();
+    console.log('Auth token:', token ? 'Present' : 'Missing');
+    console.log('Current user:', this.authService.getCurrentUser());
     return new HttpHeaders({
       'Authorization': `Bearer ${token}`,
       'Content-Type': 'application/json'
@@ -46,14 +48,29 @@ export class CleanerDashboardComponent implements OnInit {
 
   loadCleanerData() {
     const currentUser = this.authService.getCurrentUser();
-    if (!currentUser) return;
+    if (!currentUser) {
+      console.error('No current user found');
+      return;
+    }
+    
     const cleanerId = currentUser.id;
+    if (!cleanerId) {
+      console.error('Current user ID is null');
+      return;
+    }
+    
+    console.log('Loading cleaner data for ID:', cleanerId);
     this.http.get<Cleaner>(`http://localhost:8080/api/cleaners/${cleanerId}`, { headers: this.getAuthHeaders() }).subscribe({
       next: (cleaner) => {
+        console.log('Cleaner data loaded:', cleaner);
         this.cleaner = cleaner;
       },
       error: (error) => {
         console.error('Error loading cleaner data:', error);
+        if (error.status === 401) {
+          console.error('Authentication failed, redirecting to login');
+          this.authService.logout();
+        }
       }
     });
   }
@@ -132,34 +149,62 @@ export class CleanerDashboardComponent implements OnInit {
   }
 
   saveCleanerProfile() {
-    if (!this.cleaner) return;
+    if (!this.cleaner) {
+      console.error('Cleaner object is null');
+      return;
+    }
+    
     const id = this.cleaner.id;
+    if (!id) {
+      console.error('Cleaner ID is null');
+      return;
+    }
+    
+    console.log('Saving cleaner profile for ID:', id);
+    console.log('Cleaner object:', this.cleaner);
 
     // First update profile fields
     this.http.put(`http://localhost:8080/api/profile/cleaner/${id}`, this.cleaner, { headers: this.getAuthHeaders() }).subscribe({
       next: () => {
+        console.log('Profile fields updated successfully');
         if (this.selectedPhotoFile) {
           const token = this.authService.getToken();
           const formData = new FormData();
           formData.append('file', this.selectedPhotoFile);
           this.http.post(`http://localhost:8080/api/profile/cleaner/${id}/photo`, formData, {
-            headers: new HttpHeaders({ 'Authorization': `Bearer ${token}` })
+            headers: new HttpHeaders({ 'Authorization': `Bearer ${token}` }),
+            responseType: 'text' as 'json'
           }).subscribe({
             next: (url: any) => {
-              if (typeof url === 'string') {
-                this.cleaner!.profilePicture = url;
+              const returnedUrl = typeof url === 'string' ? url : (url?.toString?.() ?? '');
+              if (returnedUrl) {
+                this.cleaner!.profilePicture = returnedUrl;
               }
               this.editingProfile = false;
               this.selectedPhotoFile = null;
             },
-            error: () => { this.editingProfile = false; }
+            error: (error) => { 
+              console.error('Photo upload error:', error);
+              this.editingProfile = false; 
+            }
           });
         } else {
           this.editingProfile = false;
         }
       },
-      error: () => { this.editingProfile = false; }
+      error: (error) => { 
+        console.error('Profile update error:', error);
+        this.editingProfile = false; 
+      }
     });
+  }
+
+  getCleanerImage(cleaner: Cleaner): string {
+    if (cleaner.profilePicture) {
+      // If it's already a full URL, return as is, otherwise prepend backend URL
+      return cleaner.profilePicture.startsWith('http') ? cleaner.profilePicture : `http://localhost:8080${cleaner.profilePicture}`;
+    }
+    return 'assets/images/default-cleaner.svg';
   }
 
   formatDate(dateString: string): string {

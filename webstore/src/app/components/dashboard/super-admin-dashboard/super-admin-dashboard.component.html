@@ -1,9 +1,20 @@
 <div class="dashboard-container">
-  <!-- Dashboard Header -->
-  <div class="row mb-4">
+  <!-- Header Section -->
+  <div class="row mb-5">
     <div class="col-12">
-      <h2><i class="fas fa-crown me-2"></i>Super Admin Dashboard</h2>
-      <hr>
+      <div class="d-flex align-items-center justify-content-between">
+        <div>
+          <h1 class="display-6 fw-bold text-primary mb-2">
+            <i class="fas fa-crown me-3"></i>Super Admin Dashboard
+          </h1>
+          <p class="text-secondary mb-0">Full system control and platform management</p>
+        </div>
+        <div class="text-end">
+          <div class="badge bg-danger fs-6 px-3 py-2">
+            <i class="fas fa-crown me-2"></i>Super Administrator
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -276,7 +287,7 @@
                   <tbody>
                     <tr *ngFor="let cleaner of cleaners">
                       <td>
-                        <img [src]="cleaner.profilePicture || 'assets/images/default-cleaner.svg'" 
+                        <img [src]="getCleanerImage(cleaner)" 
                              [alt]="cleaner.firstName + ' ' + cleaner.lastName"
                              class="rounded-circle" 
                              style="width: 40px; height: 40px; object-fit: cover;">

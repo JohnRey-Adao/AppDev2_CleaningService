@@ -58,7 +58,8 @@ public class AuthTokenFilter extends OncePerRequestFilter {
         String path = request.getRequestURI();
         return path.startsWith("/auth/") || path.startsWith("/api/auth/") || 
                path.startsWith("/customers/register") || path.startsWith("/api/customers/register") ||
-               path.startsWith("/cleaners/register") || path.startsWith("/api/cleaners/register");
+               path.startsWith("/cleaners/register") || path.startsWith("/api/cleaners/register") ||
+               path.startsWith("/uploads/") || path.startsWith("/api/uploads/");
     }
 
     private String parseJwt(HttpServletRequest request) {

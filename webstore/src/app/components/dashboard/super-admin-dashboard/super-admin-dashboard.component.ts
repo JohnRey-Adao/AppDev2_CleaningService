@@ -173,7 +173,12 @@ export class SuperAdminDashboardComponent implements OnInit {
   deleteCleaner(cleanerId: number) {
     if (!confirm('Delete this cleaner?')) return;
     this.http.delete(`http://localhost:8080/api/cleaners/${cleanerId}`, { headers: this.getAuthHeaders() }).subscribe({
-      next: () => { this.successMessage = 'Cleaner deleted'; this.loadCleaners(); }
+      next: () => { this.successMessage = 'Cleaner deleted'; this.loadCleaners(); },
+      error: (err) => {
+        console.error('Failed to delete cleaner', err);
+        const msg = err?.error || err?.message || 'Failed to delete cleaner';
+        alert(typeof msg === 'string' ? msg : 'Failed to delete cleaner');
+      }
     });
   }
 
@@ -282,5 +287,13 @@ export class SuperAdminDashboardComponent implements OnInit {
 
   resetNewAdminForm() {
     this.newAdmin = { firstName: '', lastName: '', email: '', username: '', password: '', phoneNumber: '', adminLevel: 'ADMIN' };
+  }
+
+  getCleanerImage(cleaner: Cleaner): string {
+    if (cleaner.profilePicture) {
+      // If it's already a full URL, return as is, otherwise prepend backend URL
+      return cleaner.profilePicture.startsWith('http') ? cleaner.profilePicture : `http://localhost:8080${cleaner.profilePicture}`;
+    }
+    return 'assets/images/default-cleaner.svg';
   }
 }
