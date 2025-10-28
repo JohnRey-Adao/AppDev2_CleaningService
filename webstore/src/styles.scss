@@ -243,6 +243,10 @@ body {
   z-index: 1;
 }
 
+.hero-section .lead {
+  color: white !important;
+}
+
 /* Step Number Styles */
 .step-number {
   background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);

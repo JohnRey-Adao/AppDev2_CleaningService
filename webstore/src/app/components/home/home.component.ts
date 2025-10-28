@@ -15,7 +15,7 @@ import { AuthService } from '../../services/auth.service';
         <div class="row justify-content-center">
           <div class="col-lg-8">
             <h1 class="display-3 fw-bold mb-4">Professional Cleaning Services</h1>
-            <p class="lead mb-5 fs-4">Book reliable cleaners for your home or office. Quality service guaranteed with our trusted professionals!</p>
+            <p class="lead mb-5 fs-4 text-white">Book reliable cleaners for your home or office. Quality service guaranteed with our trusted professionals!</p>
             <div class="d-flex justify-content-center gap-4 flex-wrap">
               <a routerLink="/register" class="btn btn-light btn-lg px-4 py-3">
                 <i class="fas fa-user-plus me-2"></i>Get Started
@@ -48,19 +48,6 @@ import { AuthService } from '../../services/auth.service';
               <h5 class="card-title fw-bold">For Customers</h5>
               <p class="card-text text-secondary">Book professional cleaners for your home. Easy scheduling, reliable service, and competitive rates.</p>
               <a routerLink="/register" class="btn btn-primary">Register as Customer</a>
-            </div>
-          </div>
-        </div>
-        
-        <div class="col-lg-4 col-md-6">
-          <div class="card h-100 text-center dashboard-card">
-            <div class="card-body p-4">
-              <div class="mb-4">
-                <i class="fas fa-broom fa-3x text-primary"></i>
-              </div>
-              <h5 class="card-title fw-bold">For Cleaners</h5>
-              <p class="card-text text-secondary">Join our network of professional cleaners and earn money by providing quality cleaning services.</p>
-              <a routerLink="/register" class="btn btn-primary">Register as Cleaner</a>
             </div>
           </div>
         </div>
