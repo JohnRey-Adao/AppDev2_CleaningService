@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Customer, Cleaner, Booking, CleanerRegistrationRequest } from '../../../models/user.model';
 import { AuthService } from '../../../services/auth.service';
+import { environment } from '../../../../environments/environment';
 
 @Component({
   selector: 'app-admin-dashboard',
@@ -77,7 +78,7 @@ export class AdminDashboardComponent implements OnInit {
 
   // Data loading methods
   loadCustomers() {
-    this.http.get<Customer[]>('http://localhost:8080/api/customers', { headers: this.getAuthHeaders() }).subscribe({
+    this.http.get<Customer[]>(`${environment.apiBaseUrl}/customers`, { headers: this.getAuthHeaders() }).subscribe({
       next: (customers) => {
         this.customers = customers;
         this.totalCustomers = customers.length;
@@ -90,7 +91,7 @@ export class AdminDashboardComponent implements OnInit {
   }
 
   loadCleaners() {
-    this.http.get<Cleaner[]>('http://localhost:8080/api/cleaners', { headers: this.getAuthHeaders() }).subscribe({
+    this.http.get<Cleaner[]>(`${environment.apiBaseUrl}/cleaners`, { headers: this.getAuthHeaders() }).subscribe({
       next: (cleaners) => {
         this.cleaners = cleaners;
         this.totalCleaners = cleaners.length;
@@ -104,7 +105,7 @@ export class AdminDashboardComponent implements OnInit {
   }
 
   loadBookings() {
-    this.http.get<Booking[]>('http://localhost:8080/api/bookings', { headers: this.getAuthHeaders() }).subscribe({
+    this.http.get<Booking[]>(`${environment.apiBaseUrl}/bookings`, { headers: this.getAuthHeaders() }).subscribe({
       next: (bookings) => {
         this.bookings = bookings;
         this.recentBookings = bookings.slice(0, 10); // Show last 10 bookings
@@ -159,7 +160,7 @@ export class AdminDashboardComponent implements OnInit {
 
   // Cleaner actions
   viewCleaner(cleanerId: number) {
-    this.http.get<Cleaner>(`http://localhost:8080/api/cleaners/${cleanerId}`, { headers: this.getAuthHeaders() }).subscribe({
+    this.http.get<Cleaner>(`${environment.apiBaseUrl}/cleaners/${cleanerId}`, { headers: this.getAuthHeaders() }).subscribe({
       next: (cleaner) => {
         alert(`${cleaner.firstName} ${cleaner.lastName}\nEmail: ${cleaner.email}\nRate: ₱${cleaner.hourlyRate}/hr\nStatus: ${cleaner.cleanerStatus}`);
       },
@@ -175,7 +176,7 @@ export class AdminDashboardComponent implements OnInit {
       alert('Invalid rate');
       return;
     }
-    this.http.put<Cleaner>(`http://localhost:8080/api/cleaners/${cleaner.id}/rate?hourlyRate=${newRate}`, {}, { headers: this.getAuthHeaders() }).subscribe({
+    this.http.put<Cleaner>(`${environment.apiBaseUrl}/cleaners/${cleaner.id}/rate?hourlyRate=${newRate}`, {}, { headers: this.getAuthHeaders() }).subscribe({
       next: () => {
         this.successMessage = 'Cleaner updated successfully';
         this.loadCleaners();
@@ -186,7 +187,7 @@ export class AdminDashboardComponent implements OnInit {
 
   deleteCleaner(cleanerId: number) {
     if (!confirm('Delete this cleaner?')) return;
-    this.http.delete(`http://localhost:8080/api/cleaners/${cleanerId}`, { headers: this.getAuthHeaders() }).subscribe({
+    this.http.delete(`${environment.apiBaseUrl}/cleaners/${cleanerId}`, { headers: this.getAuthHeaders() }).subscribe({
       next: () => {
         this.successMessage = 'Cleaner deleted';
         this.loadCleaners();
@@ -197,7 +198,7 @@ export class AdminDashboardComponent implements OnInit {
 
   // Customer actions
   viewCustomer(customerId: number) {
-    this.http.get<Customer>(`http://localhost:8080/api/customers/${customerId}`, { headers: this.getAuthHeaders() }).subscribe({
+    this.http.get<Customer>(`${environment.apiBaseUrl}/customers/${customerId}`, { headers: this.getAuthHeaders() }).subscribe({
       next: (customer) => {
         alert(`${customer.firstName} ${customer.lastName}\nEmail: ${customer.email}\nPhone: ${customer.phoneNumber || 'N/A'}\nAddress: ${customer.address}`);
       },
@@ -209,7 +210,7 @@ export class AdminDashboardComponent implements OnInit {
     const newPhone = prompt('Update phone number:', customer.phoneNumber || '');
     if (newPhone === null) return;
     const updated: Customer = { ...customer, phoneNumber: newPhone } as Customer;
-    this.http.put<Customer>(`http://localhost:8080/api/customers/${customer.id}`, updated, { headers: this.getAuthHeaders() }).subscribe({
+    this.http.put<Customer>(`${environment.apiBaseUrl}/customers/${customer.id}`, updated, { headers: this.getAuthHeaders() }).subscribe({
       next: () => {
         this.successMessage = 'Customer updated successfully';
         this.loadCustomers();
@@ -220,7 +221,7 @@ export class AdminDashboardComponent implements OnInit {
 
   deleteCustomer(customerId: number) {
     if (!confirm('Delete this customer?')) return;
-    this.http.delete(`http://localhost:8080/api/customers/${customerId}`, { headers: this.getAuthHeaders() }).subscribe({
+    this.http.delete(`${environment.apiBaseUrl}/customers/${customerId}`, { headers: this.getAuthHeaders() }).subscribe({
       next: () => {
         this.successMessage = 'Customer deleted';
         this.loadCustomers();
@@ -234,7 +235,7 @@ export class AdminDashboardComponent implements OnInit {
     this.errorMessage = '';
     this.successMessage = '';
 
-    this.http.post('http://localhost:8080/api/cleaners/register', this.newCleaner, { headers: this.getAuthHeaders() }).subscribe({
+    this.http.post(`${environment.apiBaseUrl}/cleaners/register`, this.newCleaner, { headers: this.getAuthHeaders() }).subscribe({
       next: () => {
         this.isCreating = false;
         this.successMessage = 'Cleaner created successfully!';
@@ -279,7 +280,7 @@ export class AdminDashboardComponent implements OnInit {
   getCleanerImage(cleaner: Cleaner): string {
     if (cleaner.profilePicture) {
       // If it's already a full URL, return as is, otherwise prepend backend URL
-      return cleaner.profilePicture.startsWith('http') ? cleaner.profilePicture : `http://localhost:8080${cleaner.profilePicture}`;
+    return cleaner.profilePicture.startsWith('http') ? cleaner.profilePicture : `${environment.backendBaseUrl}${cleaner.profilePicture}`;
     }
     return 'assets/images/default-cleaner.svg';
   }

@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
+import { environment } from '../../../../environments/environment';
 
 @Component({
   selector: 'app-register',
@@ -236,7 +237,7 @@ export class RegisterComponent {
       
       const formData = { ...this.registerForm.value };
       
-      this.http.post(`http://localhost:8080/api/customers/register`, formData).subscribe({
+      this.http.post(`${environment.apiBaseUrl}/customers/register`, formData).subscribe({
         next: () => {
           this.isLoading = false;
           this.successMessage = 'Registration successful! You can now log in as a customer.';

@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Customer, Cleaner, Booking } from '../../../models/user.model';
+import { environment } from '../../../../environments/environment';
 import { AuthService } from '../../../services/auth.service';
 import { forkJoin, of } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
@@ -81,7 +82,7 @@ export class CustomerDashboardComponent implements OnInit {
     const currentUser = this.authService.getCurrentUser();
     if (currentUser) {
       console.log('Loading customer data for user:', currentUser);
-      this.http.get<Customer>(`http://localhost:8080/api/customers/${currentUser.id}`, { headers: this.getAuthHeaders() }).subscribe({
+      this.http.get<Customer>(`${environment.apiBaseUrl}/customers/${currentUser.id}`, { headers: this.getAuthHeaders() }).subscribe({
         next: (customer) => {
           console.log('Customer data loaded successfully:', customer);
           this.customer = customer;
@@ -118,13 +119,13 @@ export class CustomerDashboardComponent implements OnInit {
     const id = this.customer.id;
 
     // First update profile fields
-    this.http.put(`http://localhost:8080/api/profile/customer/${id}`, this.customer, { headers: this.getAuthHeaders() }).subscribe({
+    this.http.put(`${environment.apiBaseUrl}/profile/customer/${id}`, this.customer, { headers: this.getAuthHeaders() }).subscribe({
       next: () => {
         if (this.selectedPhotoFile) {
           const token = this.authService.getToken();
           const formData = new FormData();
           formData.append('file', this.selectedPhotoFile);
-          this.http.post(`http://localhost:8080/api/profile/customer/${id}/photo`, formData, {
+          this.http.post(`${environment.apiBaseUrl}/profile/customer/${id}/photo`, formData, {
             headers: new HttpHeaders({ 'Authorization': `Bearer ${token}` }),
             responseType: 'text' as 'json'
           }).subscribe({
@@ -160,7 +161,7 @@ export class CustomerDashboardComponent implements OnInit {
   loadBookings() {
     const currentUser = this.authService.getCurrentUser();
     if (currentUser) {
-      this.http.get<Booking[]>(`http://localhost:8080/api/bookings/customer/${currentUser.id}`, { headers: this.getAuthHeaders() }).subscribe({
+      this.http.get<Booking[]>(`${environment.apiBaseUrl}/bookings/customer/${currentUser.id}`, { headers: this.getAuthHeaders() }).subscribe({
         next: (bookings) => {
           this.bookings = bookings;
           this.calculateStats();
@@ -179,7 +180,7 @@ export class CustomerDashboardComponent implements OnInit {
   }
 
   loadAvailableCleaners() {
-    this.http.get<Cleaner[]>('http://localhost:8080/api/cleaners/available', { headers: this.getAuthHeaders() }).subscribe({
+    this.http.get<Cleaner[]>(`${environment.apiBaseUrl}/cleaners/available`, { headers: this.getAuthHeaders() }).subscribe({
       next: (cleaners) => {
         console.log('Loaded cleaners:', cleaners);
         this.availableCleaners = cleaners;
@@ -237,7 +238,7 @@ export class CustomerDashboardComponent implements OnInit {
     console.log('Creating booking with request:', bookingRequest);
     console.log('Auth headers:', this.getAuthHeaders());
 
-    this.http.post('http://localhost:8080/api/bookings', bookingRequest, { headers: this.getAuthHeaders() }).subscribe({
+    this.http.post(`${environment.apiBaseUrl}/bookings`, bookingRequest, { headers: this.getAuthHeaders() }).subscribe({
       next: () => {
         // Clear any previous error messages
         this.errorMessage = '';
@@ -276,7 +277,7 @@ export class CustomerDashboardComponent implements OnInit {
   }
 
   cancelBooking(bookingId: number) {
-    this.http.put(`http://localhost:8080/api/bookings/${bookingId}/cancel`, {}, { headers: this.getAuthHeaders() }).subscribe({
+    this.http.put(`${environment.apiBaseUrl}/bookings/${bookingId}/cancel`, {}, { headers: this.getAuthHeaders() }).subscribe({
       next: () => {
         this.successMessage = 'Booking cancelled successfully.';
         this.loadBookings();
@@ -326,7 +327,7 @@ export class CustomerDashboardComponent implements OnInit {
     // Compute availability in parallel and update the list once to avoid flicker
     this.isFiltering = true;
     const checks = this.availableCleaners.map(cleaner =>
-      this.http.get<boolean>(`http://localhost:8080/api/bookings/availability/${cleaner.id}/${this.selectedDate}`, { headers: this.getAuthHeaders() })
+      this.http.get<boolean>(`${environment.apiBaseUrl}/bookings/availability/${cleaner.id}/${this.selectedDate}`, { headers: this.getAuthHeaders() })
         .pipe(
           map(isAvailable => (isAvailable ? cleaner : null)),
           // On error, keep cleaner visible
@@ -355,7 +356,7 @@ export class CustomerDashboardComponent implements OnInit {
   getCleanerImage(cleaner: Cleaner): string {
     if (cleaner.profilePicture) {
       // If it's already a full URL, return as is, otherwise prepend backend URL
-      return cleaner.profilePicture.startsWith('http') ? cleaner.profilePicture : `http://localhost:8080${cleaner.profilePicture}`;
+      return cleaner.profilePicture.startsWith('http') ? cleaner.profilePicture : `${environment.backendBaseUrl}${cleaner.profilePicture}`;
     }
     return 'assets/images/default-cleaner.svg';
   }
@@ -376,7 +377,7 @@ export class CustomerDashboardComponent implements OnInit {
     if (!customer || !customer.profilePicture) {
       return 'assets/images/default-user.svg';
     }
-    return customer.profilePicture.startsWith('http') ? customer.profilePicture : `http://localhost:8080${customer.profilePicture}`;
+    return customer.profilePicture.startsWith('http') ? customer.profilePicture : `${environment.backendBaseUrl}${customer.profilePicture}`;
   }
 
   getStatusClass(status: string): string {

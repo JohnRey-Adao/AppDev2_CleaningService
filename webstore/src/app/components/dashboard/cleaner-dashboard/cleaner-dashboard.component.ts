@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Cleaner, Booking } from '../../../models/user.model';
 import { AuthService } from '../../../services/auth.service';
+import { environment } from '../../../../environments/environment';
 
 @Component({
   selector: 'app-cleaner-dashboard',
@@ -60,7 +61,7 @@ export class CleanerDashboardComponent implements OnInit {
     }
     
     console.log('Loading cleaner data for ID:', cleanerId);
-    this.http.get<Cleaner>(`http://localhost:8080/api/cleaners/${cleanerId}`, { headers: this.getAuthHeaders() }).subscribe({
+    this.http.get<Cleaner>(`${environment.apiBaseUrl}/cleaners/${cleanerId}`, { headers: this.getAuthHeaders() }).subscribe({
       next: (cleaner) => {
         console.log('Cleaner data loaded:', cleaner);
         this.cleaner = cleaner;
@@ -79,7 +80,7 @@ export class CleanerDashboardComponent implements OnInit {
     const currentUser = this.authService.getCurrentUser();
     if (!currentUser) return;
     const cleanerId = currentUser.id;
-    this.http.get<Booking[]>(`http://localhost:8080/api/bookings/cleaner/${cleanerId}`, { headers: this.getAuthHeaders() }).subscribe({
+    this.http.get<Booking[]>(`${environment.apiBaseUrl}/bookings/cleaner/${cleanerId}`, { headers: this.getAuthHeaders() }).subscribe({
       next: (bookings) => {
         this.bookings = bookings;
         this.calculateStats();
@@ -112,21 +113,21 @@ export class CleanerDashboardComponent implements OnInit {
   }
 
   confirmBooking(bookingId: number) {
-    this.http.put(`http://localhost:8080/api/bookings/${bookingId}/confirm`, {}, { headers: this.getAuthHeaders() }).subscribe({
+    this.http.put(`${environment.apiBaseUrl}/bookings/${bookingId}/confirm`, {}, { headers: this.getAuthHeaders() }).subscribe({
       next: () => { this.loadBookings(); },
       error: (error) => { console.error('Error confirming booking:', error); }
     });
   }
 
   startBooking(bookingId: number) {
-    this.http.put(`http://localhost:8080/api/bookings/${bookingId}/start`, {}, { headers: this.getAuthHeaders() }).subscribe({
+    this.http.put(`${environment.apiBaseUrl}/bookings/${bookingId}/start`, {}, { headers: this.getAuthHeaders() }).subscribe({
       next: () => { this.loadBookings(); },
       error: (error) => { console.error('Error starting booking:', error); }
     });
   }
 
   completeBooking(bookingId: number) {
-    this.http.put(`http://localhost:8080/api/bookings/${bookingId}/complete`, {}, { headers: this.getAuthHeaders() }).subscribe({
+    this.http.put(`${environment.apiBaseUrl}/bookings/${bookingId}/complete`, {}, { headers: this.getAuthHeaders() }).subscribe({
       next: () => { this.loadBookings(); },
       error: (error) => { console.error('Error completing booking:', error); }
     });
@@ -135,7 +136,7 @@ export class CleanerDashboardComponent implements OnInit {
   toggleStatus() {
     if (!this.cleaner) return;
     const newStatus = this.cleaner.cleanerStatus === 'AVAILABLE' ? 'OFFLINE' : 'AVAILABLE';
-    this.http.put(`http://localhost:8080/api/cleaners/${this.cleaner.id}/status?status=${newStatus}`, {}, { headers: this.getAuthHeaders() }).subscribe({
+    this.http.put(`${environment.apiBaseUrl}/cleaners/${this.cleaner.id}/status?status=${newStatus}`, {}, { headers: this.getAuthHeaders() }).subscribe({
       next: () => { this.loadCleanerData(); },
       error: (error) => { console.error('Error updating status:', error); }
     });
@@ -164,14 +165,14 @@ export class CleanerDashboardComponent implements OnInit {
     console.log('Cleaner object:', this.cleaner);
 
     // First update profile fields
-    this.http.put(`http://localhost:8080/api/profile/cleaner/${id}`, this.cleaner, { headers: this.getAuthHeaders() }).subscribe({
+    this.http.put(`${environment.apiBaseUrl}/profile/cleaner/${id}`, this.cleaner, { headers: this.getAuthHeaders() }).subscribe({
       next: () => {
         console.log('Profile fields updated successfully');
         if (this.selectedPhotoFile) {
           const token = this.authService.getToken();
           const formData = new FormData();
           formData.append('file', this.selectedPhotoFile);
-          this.http.post(`http://localhost:8080/api/profile/cleaner/${id}/photo`, formData, {
+          this.http.post(`${environment.apiBaseUrl}/profile/cleaner/${id}/photo`, formData, {
             headers: new HttpHeaders({ 'Authorization': `Bearer ${token}` }),
             responseType: 'text' as 'json'
           }).subscribe({
@@ -202,7 +203,7 @@ export class CleanerDashboardComponent implements OnInit {
   getCleanerImage(cleaner: Cleaner): string {
     if (cleaner.profilePicture) {
       // If it's already a full URL, return as is, otherwise prepend backend URL
-      return cleaner.profilePicture.startsWith('http') ? cleaner.profilePicture : `http://localhost:8080${cleaner.profilePicture}`;
+    return cleaner.profilePicture.startsWith('http') ? cleaner.profilePicture : `${environment.backendBaseUrl}${cleaner.profilePicture}`;
     }
     return 'assets/images/default-cleaner.svg';
   }
