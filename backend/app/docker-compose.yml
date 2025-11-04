@@ -1,0 +1,48 @@
+services:
+  db:
+    image: mysql:8.0
+    container_name: mysql_cleaningservice
+    environment:
+      MYSQL_ROOT_PASSWORD: Redneedle-21
+      MYSQL_DATABASE: cleaningservice
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    networks:
+      - cleaningservice-network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-pRedneedle-21"]
+      interval: 10s
+      timeout: 10s
+      retries: 10
+      start_period: 30s
+
+  backend:
+    build:
+      context: ../..
+      dockerfile: backend/app/Dockerfile
+    image: cleaningservice-backend
+    container_name: cleaningservice-backend
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://db:3306/cleaningservice?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true&createDatabaseIfNotExist=true
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: Redneedle-21
+      SPRING_PROFILES_ACTIVE: dev
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./uploads:/app/uploads
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - cleaningservice-network
+    restart: unless-stopped
+
+networks:
+  cleaningservice-network:
+    driver: bridge
+
+volumes:
+  mysql_data:

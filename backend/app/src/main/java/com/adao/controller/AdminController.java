@@ -1,7 +1,9 @@
 package com.adao.controller;
 
+import com.adao.dto.AdminRegistrationRequest;
 import com.adao.entity.Admin;
 import com.adao.service.AdminService;
+import com.adao.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -19,10 +21,32 @@ public class AdminController {
     @Autowired
     private AdminService adminService;
 
+    @Autowired
+    private UserService userService;
+
     @PostMapping("/create")
     @PreAuthorize("hasRole('SUPER_ADMIN')")
-    public ResponseEntity<?> createAdmin(@Valid @RequestBody Admin admin) {
+    public ResponseEntity<?> createAdmin(@Valid @RequestBody AdminRegistrationRequest request) {
         try {
+            // Check if username or email already exists
+            if (userService.existsByUsername(request.getUsername())) {
+                return ResponseEntity.badRequest()
+                        .body(java.util.Map.of("message", "Username is already taken!"));
+            }
+            if (userService.existsByEmail(request.getEmail())) {
+                return ResponseEntity.badRequest()
+                        .body(java.util.Map.of("message", "Email is already in use!"));
+            }
+
+            Admin admin = new Admin();
+            admin.setUsername(request.getUsername());
+            admin.setEmail(request.getEmail());
+            admin.setPassword(request.getPassword());
+            admin.setFirstName(request.getFirstName());
+            admin.setLastName(request.getLastName());
+            admin.setPhoneNumber(request.getPhoneNumber());
+            admin.setAdminLevel(request.getAdminLevel());
+
             Admin savedAdmin = adminService.createAdmin(admin);
             return ResponseEntity.ok(savedAdmin);
         } catch (Exception e) {

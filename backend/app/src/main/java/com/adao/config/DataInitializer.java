@@ -53,7 +53,7 @@ public class DataInitializer implements CommandLineRunner {
             superAdmin.setPhoneNumber("123-456-7890");
             superAdmin.setAdminLevel(AdminLevel.SUPER_ADMIN);
 
-            adminService.createAdmin(superAdmin);
+            adminService.createSuperAdmin(superAdmin);
             System.out.println("Default super admin created successfully!");
         }
     }
